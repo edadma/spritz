@@ -1,7 +1,6 @@
-package io.github.edadma.cross_template
+package io.github.edadma.spritz
 
-object Main extends App {
+import pprint.pprintln
 
-  println("> cross_templateJVM/Test/run")
-
-}
+@main def run(): Unit =
+  pprintln(RouteParser("/asdf/:zxcv-:qwer"))

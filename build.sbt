@@ -3,10 +3,10 @@ ThisBuild / versionScheme := Some("semver-spec")
 
 publish / skip := true
 
-lazy val cross_template = crossProject(JSPlatform, JVMPlatform, NativePlatform)
+lazy val spritz = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .in(file("."))
   .settings(
-    name := "cross-template",
+    name := "spritz",
     version := "0.0.1",
     scalaVersion := "3.1.3",
     scalacOptions ++=
@@ -23,13 +23,14 @@ lazy val cross_template = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     githubOwner := "edadma",
     githubRepository := name.value,
     mainClass := Some(s"${organization.value}.${name.value}.Main"),
-//    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test",
-//    libraryDependencies ++= Seq(
-//      "io.github.edadma" %%% "cross-platform" % "0.1.1"
-//    ),
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test",
+    libraryDependencies += "org.scala-lang.modules" %%% "scala-parser-combinators" % "2.1.1",
+    libraryDependencies ++= Seq(
+      "io.github.edadma" %%% "recognizer" % "0.1.0-pre.11",
+    ),
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0",
-//      "com.lihaoyi" %%% "pprint" % "0.7.2" % "test",
+      "com.lihaoyi" %%% "pprint" % "0.7.2" % "test",
     ),
     publishMavenStyle := true,
     Test / publishArtifact := false,

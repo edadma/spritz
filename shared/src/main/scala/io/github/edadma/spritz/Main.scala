@@ -1,6 +1,4 @@
-package io.github.edadma.cross_template
+package io.github.edadma.spritz
 
-object Main extends App {
-
-
-}
+@main def run(): Unit =
+  println("main")
