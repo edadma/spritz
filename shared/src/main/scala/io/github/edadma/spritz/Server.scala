@@ -14,8 +14,6 @@ abstract class Server(serverName: String):
 
   println("listening")
 
-  process(Request("GET", "/birds/asdf", Seq(), Map(), "/birds/asdf"))
-
   def process(req: Request): Unit =
     val res = new Response(serverName)
 

@@ -8,13 +8,18 @@ import scala.collection.mutable.ArrayBuffer
 import scala.io.Codec
 
 class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
-  var statusCode: Int = 500
-  var statusMessage: String = HTTP.statusMessage(statusCode)
+  var statusCode: Option[Int] = None
+  var statusMessage: String = "None"
   val headers = new mutable.LinkedHashMap[String, String]
   var body: Array[Byte] = Array()
 
   def status(code: Int): Response =
-    statusCode = code
+    statusCode = Some(code)
+    statusMessage = HTTP.statusMessageString(code)
+    this
+
+  def statusIfNone(code: Int): Response =
+    if statusCode.isEmpty then status(code)
     this
 
   def sendStatus(code: Int): Response =
@@ -23,12 +28,14 @@ class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
 
   def send(text: String): Response =
     setIfNot("Content-Type") {
-      if body startsWith "<" then "text/html; charset=UTF-8" else "text/text; charset=UTF-8"
+      if text startsWith "<" then "text/html; charset=UTF-8" else "text/plain; charset=UTF-8"
     }
-
+    statusIfNone(200)
     body = Codec.toUTF8(text)
     headers("Content-Length") = body.length.toString
     this
+
+  def send(obj: Any): Response = send(obj.toString)
 
   def setIfNot(key: String)(value: => String): Response =
     if !(headers contains key) then headers(key) = value
@@ -42,7 +49,7 @@ class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
 
     def eol = buf ++= "\r\n".getBytes
 
-    buf ++= s"HTTP/1.0 $statusCode $statusMessage".getBytes
+    buf ++= s"HTTP/1.0 ${statusCode.getOrElse(500)} $statusMessage".getBytes
     eol
 
     for (k, v) <- headers do
@@ -54,4 +61,4 @@ class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
     buf.toArray
 
   override def toString: String =
-    s"--- HTTP Response Begin ---\n${Codec.fromUTF8(response).mkString}--- HTTP Response End ---"
+    s"--- HTTP Response Begin ---\n${Codec.fromUTF8(response).mkString}\n--- HTTP Response End ---"
