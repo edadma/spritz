@@ -30,22 +30,24 @@ class Router extends Handler:
   def get(route: String, handler: Handler): Router =
     val (path, params) = regex(route)
 
-    routes += Route.Request("GET", path, params, handler)
+    routes += Route.Endpoint("GET", path, params, handler)
     this
 
+  protected def callHandler(h: Handler, req: Request)
   def apply(req: Request): Unit =
-    for Route.Request(method, path, params, handler) <- routes do
-      println(path)
-      if method == req.method then
-        path.findPrefixMatchOf(req.rest) match
-          case Some(m) if m.end == req.rest.length =>
-            println(123)
-            handler(
-              req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
-            )
-            return
-          case Some(m) =>
-            println(m)
-          case _ =>
+    for route <- routes do
+      route match
+        case Route.Endpoint(method, path, params, handler) =>
+          if method == req.method then
+            path.findPrefixMatchOf(req.rest) match
+              case Some(m) if m.end == req.rest.length =>
+                handler(
+                  req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+                )
+                return
+              case Some(m) =>
+              case None    =>
+        case Route.Middleware(handler) =>
+    end for
 
     sys.error(s"no matching route for ${req.rest}")

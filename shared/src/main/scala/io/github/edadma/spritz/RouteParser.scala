@@ -12,7 +12,10 @@ object RouteParser extends RegexParsers:
     rep1(segment) ^^ RouteAST.Sequence.apply
 
   def segment: Parser[RouteAST] =
-    "/" ~ rep1(piece) ^^ { case _ ~ ps => RouteAST.Sequence(RouteAST.Slash +: ps) }
+    "/" ~ rep(piece) ^^ {
+      case _ ~ Nil => RouteAST.Slash
+      case _ ~ ps  => RouteAST.Sequence(RouteAST.Slash +: ps)
+    }
 
   def piece: Parser[RouteAST] = parameter | literal
 
