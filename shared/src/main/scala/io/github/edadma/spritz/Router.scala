@@ -43,7 +43,7 @@ class Router extends RequestHandler:
     routes += Route.Middleware(middleware)
     this
 
-  def apply(req: Request): HandlerResult =
+  def apply(req: Request, res: Response): HandlerResult =
     for route <- routes do
       route match
         case Route.Endpoint(method, path, params, handler) =>
@@ -51,7 +51,9 @@ class Router extends RequestHandler:
             path.findPrefixMatchOf(req.rest) match
               case Some(m) if m.end == req.rest.length =>
                 handler(
-                  req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+                  req
+                    .copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+                  res,
                 )
                 return HandlerResult.Done
               case _ =>
@@ -60,13 +62,14 @@ class Router extends RequestHandler:
             case Some(m) =>
               handler(
                 req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+                res,
               ) match
                 case HandlerResult.Done => return HandlerResult.Done
                 case HandlerResult.Next =>
             // todo: error case
             case _ =>
         case Route.Middleware(handler) =>
-          handler(req) match
+          handler(req, res) match
             case HandlerResult.Done => return HandlerResult.Done
             case HandlerResult.Next =>
         // todo: error case

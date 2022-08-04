@@ -5,8 +5,8 @@ import pprint.pprintln
 @main def run(): Unit =
   val birds =
     Router()
-      .get("/", req => println(("=> /birds", req)))
-      .get("/:id", req => println(("=> /birds/:id", req)))
+      .get("/", (req, res) => println(("=> /birds", req)))
+      .get("/:id", (req, res) => println(("=> /birds/:id", req)))
 
   new Server {
     def main = { app =>
@@ -21,11 +21,17 @@ abstract class Server:
 
   main(router)
 
-  router.use { req =>
-    println(s"no matching routes for path '${req.path}'")
+  router.use { (req, res) =>
+    res.status(500).send(s"no matching routes for path '${req.path}'")
     HandlerResult.Done
   }
 
   println("listening")
 
-  println(router(Request("GET", "/birds/asdf", Seq(), Map(), "/birds/asdf")))
+  process(Request("GET", "/birds/asdf", Seq(), Map(), "/birds/asdf"))
+
+  def process(req: Request): Unit =
+    val res = new Response
+
+    router(req, res)
+    println(res)
