@@ -22,10 +22,10 @@ abstract class Server:
   main(router)
 
   router.use { req =>
-    println("nothing matched")
+    println(s"no matching routes for path '${req.path}'")
     HandlerResult.Done
   }
 
   println("listening")
 
-  println(router(Request("GET", "/birds/asdf", Map(), "/birds/asdf")))
+  println(router(Request("GET", "/birds/asdf", Seq(), Map(), "/birds/asdf")))
