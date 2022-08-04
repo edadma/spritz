@@ -2,9 +2,9 @@ package io.github.edadma.spritz
 
 import scala.util.matching.Regex
 
-type EndpointHandler = Request => Unit
+type EndpointHandler = (Request, Response) => Unit
 
-type RequestHandler = Request => HandlerResult
+type RequestHandler = (Request, Response) => HandlerResult
 
 type Method = "GET" | "POST"
 
