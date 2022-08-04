@@ -43,7 +43,6 @@ class Router extends RequestHandler:
     routes += Route.Middleware(middleware)
     this
 
-  //  protected def callHandler(h: Handler, req: Request)
   def apply(req: Request): HandlerResult =
     for route <- routes do
       route match
@@ -67,6 +66,10 @@ class Router extends RequestHandler:
             // todo: error case
             case _ =>
         case Route.Middleware(handler) =>
+          handler(req) match
+            case HandlerResult.Done => return HandlerResult.Done
+            case HandlerResult.Next =>
+        // todo: error case
     end for
 
     HandlerResult.Next

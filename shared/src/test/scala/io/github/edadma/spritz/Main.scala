@@ -4,7 +4,9 @@ import pprint.pprintln
 
 @main def run(): Unit =
   val birds =
-    Router().get("/", req => println(("/birds", req))).get("/:id", req => println(("/birds/:id", req)))
+    Router()
+      .get("/", req => println(("=> /birds", req)))
+      .get("/:id", req => println(("=> /birds/:id", req)))
 
   new Server {
     def main = { app =>
@@ -15,9 +17,15 @@ import pprint.pprintln
 abstract class Server:
   def main: Router => Unit
 
-  private val router = Router()
+  protected val router = new Router
 
   main(router)
+
+  router.use { req =>
+    println("nothing matched")
+    HandlerResult.Done
+  }
+
   println("listening")
 
   println(router(Request("GET", "/birds/asdf", Map(), "/birds/asdf")))
