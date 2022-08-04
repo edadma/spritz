@@ -2,11 +2,18 @@ package io.github.edadma.spritz
 
 import scala.util.matching.Regex
 
-type Handler = Request => Unit
+type EndpointHandler = Request => Unit
+
+type RequestHandler = Request => HandlerResult
 
 type Method = "GET" | "POST"
 
 enum Route:
-  case Endpoint(method: Method, path: Regex, params: Seq[String], handler: io.github.edadma.spritz.Handler)
-      extends Route
-  case Middleware(handler: io.github.edadma.spritz.Handler) extends Route
+  case Endpoint(method: Method, path: Regex, params: Seq[String], handler: EndpointHandler) extends Route
+  case PathRoutes(path: Regex, params: Seq[String], handler: RequestHandler) extends Route
+  case Middleware(handler: RequestHandler) extends Route
+
+enum HandlerResult:
+  case Done extends HandlerResult
+  case Next extends HandlerResult
+  case Error(err: Any) extends HandlerResult

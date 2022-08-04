@@ -8,7 +8,7 @@ import pprint.pprintln
 
   new Server {
     def main = { app =>
-      app.get("/birds", birds)
+      app.use("/birds", birds)
     }
   }
 
@@ -20,4 +20,4 @@ abstract class Server:
   main(router)
   println("listening")
 
-  router(Request("GET", "/birds/asdf", Map(), "/birds/asdf"))
+  println(router(Request("GET", "/birds/asdf", Map(), "/birds/asdf")))

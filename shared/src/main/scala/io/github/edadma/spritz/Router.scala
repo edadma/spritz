@@ -6,11 +6,11 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 
-class Router extends Handler:
+class Router extends RequestHandler:
 
   private[spritz] val routes = new ListBuffer[Route]
 
-  private def regex(route: String): (Regex, Seq[String]) =
+  private def regex(path: String): (Regex, Seq[String]) =
     val buf = new mutable.StringBuilder
     val groups = new ListBuffer[String]
 
@@ -24,17 +24,27 @@ class Router extends Handler:
         case RouteAST.Sequence(elems) => elems foreach regex
 
     buf += '^'
-    regex(RouteParser(route))
+    regex(RouteParser(path))
     (buf.toString.r, groups.toSeq)
 
-  def get(route: String, handler: Handler): Router =
-    val (path, params) = regex(route)
+  def get(path: String, handler: EndpointHandler): Router =
+    val (pathr, params) = regex(path)
 
-    routes += Route.Endpoint("GET", path, params, handler)
+    routes += Route.Endpoint("GET", pathr, params, handler)
     this
 
-  protected def callHandler(h: Handler, req: Request)
-  def apply(req: Request): Unit =
+  def use(path: String, middleware: RequestHandler): Router =
+    val (pathr, params) = regex(path)
+
+    routes += Route.PathRoutes(pathr, params, middleware)
+    this
+
+  def use(middleware: RequestHandler): Router =
+    routes += Route.Middleware(middleware)
+    this
+
+  //  protected def callHandler(h: Handler, req: Request)
+  def apply(req: Request): HandlerResult =
     for route <- routes do
       route match
         case Route.Endpoint(method, path, params, handler) =>
@@ -44,10 +54,19 @@ class Router extends Handler:
                 handler(
                   req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
                 )
-                return
-              case Some(m) =>
-              case None    =>
+                return HandlerResult.Done
+              case _ =>
+        case Route.PathRoutes(path, params, handler) =>
+          path.findPrefixMatchOf(req.rest) match
+            case Some(m) =>
+              handler(
+                req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+              ) match
+                case HandlerResult.Done => return HandlerResult.Done
+                case HandlerResult.Next =>
+            // todo: error case
+            case _ =>
         case Route.Middleware(handler) =>
     end for
 
-    sys.error(s"no matching route for ${req.rest}")
+    HandlerResult.Next
