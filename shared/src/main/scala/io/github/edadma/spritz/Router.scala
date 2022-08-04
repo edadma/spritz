@@ -10,33 +10,42 @@ class Router extends Handler:
 
   private[spritz] val routes = new ListBuffer[Route]
 
-  private def regex(route: String): Regex =
+  private def regex(route: String): (Regex, Seq[String]) =
     val buf = new mutable.StringBuilder
+    val groups = new ListBuffer[String]
 
     def regex(elem: RouteAST): Unit =
       elem match
-        case Slash                     => buf += '/'
+        case Slash                     => buf ++= "/?"
         case RouteAST.Literal(segment) => buf ++= segment
         case RouteAST.Parameter(name) =>
-          buf += ':'
-          buf ++= s"(?<$name>[^\\/#\\?]+?)"
+          buf ++= s"(?<$name>[^/#\\?]+)"
+          groups += name
         case RouteAST.Sequence(elems) => elems foreach regex
 
     buf += '^'
     regex(RouteParser(route))
-    buf.toString.r
+    (buf.toString.r, groups.toSeq)
 
   def get(route: String, handler: Handler): Router =
-    routes += Route.Request("GET", regex(route), handler)
+    val (path, params) = regex(route)
+
+    routes += Route.Request("GET", path, params, handler)
     this
 
   def apply(req: Request): Unit =
-    for Route.Request(method, path, handler) <- routes do
+    for Route.Request(method, path, params, handler) <- routes do
+      println(path)
       if method == req.method then
-        path.findFirstMatchIn(req.rest) match
+        path.findPrefixMatchOf(req.rest) match
           case Some(m) if m.end == req.rest.length =>
-            handler(req)
+            println(123)
+            handler(
+              req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+            )
             return
+          case Some(m) =>
+            println(m)
           case _ =>
 
     sys.error(s"no matching route for ${req.rest}")
