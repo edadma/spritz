@@ -51,14 +51,11 @@ object RequestParser extends Machine:
 
   case object blankState extends State:
     def on = {
-      case '\n'       => transition(bodyState)
-      case EOI | '\r' => br
-      case _          => br
+      case '\n' => transition(bodyState)
+      case _    => br
     }
 
   case object bodyState extends State:
-    override def enter(): Unit = body.clear()
-
     def on = {
       case EOI =>
       case b   => body += b.toByte
@@ -76,6 +73,7 @@ object RequestParser extends Machine:
   case object methodState extends RequestLineState(pathState):
     override def enter(): Unit =
       elems.clear()
+      body.clear()
       super.enter()
 
   case object pathState extends RequestLineState(valueState)

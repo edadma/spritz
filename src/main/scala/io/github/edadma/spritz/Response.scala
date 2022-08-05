@@ -42,7 +42,7 @@ class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
     if !(headers contains key) then headers(key) = value
     this
 
-  def response: Array[Byte] =
+  def responseArray: Array[Byte] =
     setIfNot("Server") { serverName }
     setIfNot("Date") { DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now(zoneId)) }
 
@@ -62,4 +62,4 @@ class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
     buf.toArray
 
   override def toString: String =
-    s"--- HTTP Response Begin ---\n${Codec.fromUTF8(response).mkString}\n--- HTTP Response End ---"
+    s"--- HTTP Response Begin ---\n${Codec.fromUTF8(responseArray).mkString}\n--- HTTP Response End ---"
