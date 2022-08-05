@@ -51,8 +51,11 @@ class Router extends RequestHandler:
             path.findPrefixMatchOf(req.rest) match
               case Some(m) if m.end == req.rest.length =>
                 handler(
-                  req
-                    .copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+                  req.copy(
+                    params = req.params ++ (params map (k => k -> m.group(k))),
+                    route = req.route ++ req.rest.substring(0, m.end),
+                    rest = req.rest.substring(m.end),
+                  ),
                   res,
                 )
                 return HandlerResult.Done
@@ -61,18 +64,22 @@ class Router extends RequestHandler:
           path.findPrefixMatchOf(req.rest) match
             case Some(m) =>
               handler(
-                req.copy(rest = req.rest.substring(m.end), params = req.params ++ (params map (k => k -> m.group(k)))),
+                req.copy(
+                  params = req.params ++ (params map (k => k -> m.group(k))),
+                  route = req.route ++ req.rest.substring(0, m.end),
+                  rest = req.rest.substring(m.end),
+                ),
                 res,
               ) match
-                case HandlerResult.Done => return HandlerResult.Done
-                case HandlerResult.Next =>
-            // todo: error case
+                case HandlerResult.Done       => return HandlerResult.Done
+                case HandlerResult.Next       =>
+                case HandlerResult.Error(err) => return HandlerResult.Error(err)
             case _ =>
         case Route.Middleware(handler) =>
           handler(req, res) match
-            case HandlerResult.Done => return HandlerResult.Done
-            case HandlerResult.Next =>
-        // todo: error case
+            case HandlerResult.Done       => return HandlerResult.Done
+            case HandlerResult.Next       =>
+            case HandlerResult.Error(err) => return HandlerResult.Error(err)
     end for
 
     HandlerResult.Next

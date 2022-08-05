@@ -16,6 +16,8 @@ abstract class Machine:
     next.enter()
     state = next
 
+  def selfTransition(): Unit = transition(state)
+
   def transition(next: State): Unit =
     if trace then println(s"$state => $next")
     if state != null then state.exit()
@@ -43,11 +45,11 @@ abstract class Machine:
       state on EOI
 
     transition(DONE)
+  end run
+
+  abstract class State:
+    def on: PartialFunction[Int, Unit]
+
+    def enter(): Unit = {}
+    def exit(): Unit = {}
 end Machine
-
-abstract class State:
-  def on: PartialFunction[Int, Unit]
-
-  def enter(): Unit = {}
-  def exit(): Unit = {}
-end State

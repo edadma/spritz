@@ -30,7 +30,7 @@ lazy val spritz = crossProject(JSPlatform, JVMPlatform, NativePlatform)
     ),
     libraryDependencies ++= Seq(
       "com.github.scopt" %%% "scopt" % "4.1.0",
-      "com.lihaoyi" %%% "pprint" % "0.7.2" % "test",
+      "com.lihaoyi" %%% "pprint" % "0.7.2", /*% "test"*/
     ),
     publishMavenStyle := true,
     Test / publishArtifact := false,

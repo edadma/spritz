@@ -1,6 +1,8 @@
 package io.github.edadma.spritz
 
-object requestParser extends Machine:
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+
+object RequestParser extends Machine:
   val start: State = methodState
 
   val elems = new ListBuffer[String]
@@ -20,14 +22,16 @@ object requestParser extends Machine:
 
   class RequestLineState(next: State) extends AccState:
     def on = {
-      case ' ' => transition(next)
-      case b   => acc(b)
+      case ' '               => transition(next)
+      case EOI | '\r' | '\n' => br
+      case b                 => acc(b)
     }
 
   case object valueState extends AccState:
     def on = {
-      case '\r' => transition(value2keyState)
-      case b    => acc(b)
+      case '\r'       => transition(value2keyState)
+      case EOI | '\n' => br
+      case b          => acc(b)
     }
 
   case object value2keyState extends State:
@@ -41,13 +45,15 @@ object requestParser extends Machine:
       case '\r' if buf.nonEmpty => br
       case '\r'                 => directTransition(blankState)
       case ':'                  => transition(key2valueState)
+      case EOI | '\n'           => br
       case b                    => acc(b)
     }
 
   case object blankState extends State:
     def on = {
-      case '\n' => transition(bodyState)
-      case _    => br
+      case '\n'       => transition(bodyState)
+      case EOI | '\r' => br
+      case _          => br
     }
 
   case object bodyState extends State:
@@ -60,13 +66,17 @@ object requestParser extends Machine:
 
   case object key2valueState extends State:
     def on = {
-      case ' ' =>
+      case ' '               =>
+      case EOI | '\r' | '\n' => br
       case _ =>
         pushback()
         transition(valueState)
     }
 
-  case object methodState extends RequestLineState(pathState)
+  case object methodState extends RequestLineState(pathState):
+    override def enter(): Unit =
+      elems.clear()
+      super.enter()
 
   case object pathState extends RequestLineState(valueState)
-end requestParser
+end RequestParser

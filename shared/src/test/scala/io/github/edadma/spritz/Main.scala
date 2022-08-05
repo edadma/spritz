@@ -2,6 +2,8 @@ package io.github.edadma.spritz
 
 import pprint.pprintln
 
+import scala.language.postfixOps
+
 @main def run(): Unit =
   val birds =
     Router()
@@ -12,6 +14,4 @@ import pprint.pprintln
     def main = { app =>
       app.use("/birds", birds)
     }
-
-    process(Request("GET", "/birds", Seq(), Map(), "/birds"))
   }

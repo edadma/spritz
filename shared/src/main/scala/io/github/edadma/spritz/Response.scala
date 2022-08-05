@@ -12,6 +12,7 @@ class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
   var statusMessage: String = "None"
   val headers = new mutable.LinkedHashMap[String, String]
   var body: Array[Byte] = Array()
+  val locals = new mutable.HashMap[String, Any]
 
   def status(code: Int): Response =
     statusCode = Some(code)
