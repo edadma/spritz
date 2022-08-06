@@ -24,7 +24,7 @@ object Spritz extends Router:
 
   def listen(port: Int, flags: Int = 0, backlog: Int = 4096): Unit =
     use { (req, res) =>
-      res.status(500).send(s"no matching routes for path '${req.path}'")
+      res.status(404).send(s"no matching routes for path '${req.path}'")
       HandlerResult.Done
     }
 
