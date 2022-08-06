@@ -66,15 +66,6 @@ object Spritz extends Router:
       /*checkError(*/
       uv_close(client, closeCB) /*, "uv_close")*/
       free(shutdownReq.asInstanceOf[Ptr[Byte]])
-
-      ////////
-
-      val conn = connectionMap(client)
-
-      println((conn, conn.parser))
-
-      ////////
-
       connectionMap -= client
       ()
   end shutdownCB
@@ -91,6 +82,10 @@ object Spritz extends Router:
         for i <- 0 until size.toInt do conn.parser send !(buffer._1 + i)
 
         free(buffer._1)
+
+        if conn.parser.isDone then
+          println("received full request")
+          println(conn.parser)
   end readCB
 
   val closeCB: CloseCB =
