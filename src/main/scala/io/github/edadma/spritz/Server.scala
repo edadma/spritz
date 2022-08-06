@@ -56,6 +56,24 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
       free(shutdownReq.asInstanceOf[Ptr[Byte]])
     }
 
+  val readCB: ReadCB =
+    (client: TCPHandle, size: CSSize, buffer: Ptr[Buffer]) => {
+      if (size < 0) {
+        shutdown(client)
+      } else {
+        try {
+          val parsed_request = HTTP.parseRequest(buffer._1, size)
+          val response = router(parsed_request)
+          send_response(client, response)
+          shutdown(client)
+        } catch {
+          case e: Throwable =>
+            println(s"error during parsing: ${e}")
+            shutdown(client)
+        }
+      }
+    }
+
   val closeCB: CloseCB =
     (client: TCPHandle) => {
       println("closed client connection")
