@@ -2,9 +2,9 @@ package io.github.edadma.spritz
 
 import pprint.pprintln
 
-import scala.scalanative.libc.stdlib.malloc
-import scala.scalanative.unsafe._
-import scala.scalanative.unsigned._
+import scala.scalanative.libc.stdlib.*
+import scala.scalanative.unsafe.*
+import scala.scalanative.unsigned.*
 
 abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val serverName: String):
   import io.github.edadma.spritz.libuv._
@@ -21,8 +21,6 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
     HandlerResult.Done
   }
 
-  /////////////
-
   val SOCKADDR_IN = 16
   val socketAddress: Ptr[Byte] = stackalloc[Byte](SOCKADDR_IN.toUInt)
 
@@ -36,7 +34,35 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
   checkError(uv_tcp_init(loop, server), "uv_tcp_init(server)")
   checkError(uv_tcp_bind(server, socketAddress, flags), "uv_tcp_bind")
 
-  val onConnection: uv_connection_cb =
+  val ALLOC_SIZE = 1024
+
+  val allocateCB: uv_alloc_cb =
+    (client: TCPHandle, size: CSize, buffer: Ptr[Buffer]) =>
+      buffer._1 = malloc(ALLOC_SIZE.toUInt)
+      buffer._2 = ALLOC_SIZE.toUInt
+
+  def shutdown(client: TCPHandle): Unit = {
+    val shutdown_req = malloc(uv_req_size(UV_SHUTDOWN_REQ_T))
+      .asInstanceOf[ShutdownReq]
+    !shutdown_req = client.asInstanceOf[Ptr[Byte]]
+    checkError(uv_shutdown(shutdown_req, client, shutdownCB), "uv_shutdown")
+  }
+
+  val shutdownCB: ShutdownCB =
+    (shutdownReq: ShutdownReq, status: Int) => {
+      println("all pending writes complete, closing TCP connection")
+      val client = (!shutdownReq).asInstanceOf[TCPHandle]
+      checkError(uv_close(client, closeCB), "uv_close")
+      free(shutdownReq.asInstanceOf[Ptr[Byte]])
+    }
+
+  val closeCB: CloseCB =
+    (client: TCPHandle) => {
+      println("closed client connection")
+      // todo: remove client state
+    }
+
+  val onConnectionCB: uv_connection_cb =
     (handle: TCPHandle, status: Int) =>
       println("received connection")
 
@@ -44,24 +70,19 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
       val client = malloc(uv_handle_size(UV_TCP_T)).asInstanceOf[TCPHandle]
 
       checkError(uv_tcp_init(loop, client), "uv_tcp_init(client)")
-
-//      var client_state_ptr = (!client).asInstanceOf[Ptr[ClientState]]
-//
-//      client_state_ptr = initialize_client_state(client)
-
-      // accept the incoming connection into the new handle
       checkError(uv_accept(handle, client), "uv_accept")
-      // set up callbacks for incoming data
-      checkError(uv_read_start(client, allocCB, readCB), "uv_read_start")
-  end onConnection
+      checkError(uv_read_start(client, allocateCB, readCB), "uv_read_start")
+  end onConnectionCB
 
-  checkError(uv_listen(server, backlog, onConnection), "uv_tcp_listen")
+  checkError(uv_listen(server, backlog, onConnectionCB), "uv_tcp_listen")
   println(s"listening on $address:$port")
   uv_run(loop, UV_RUN_DEFAULT)
 
-  val HTTP_request: Array[Byte] = "GET /birds/asdf HTTP/1.1\r\nHost: zxcv.com\r\n\r\n".getBytes
+  /////////////
 
-  process(HTTP_request)
+//  val HTTP_request: Array[Byte] = "GET /birds/asdf HTTP/1.1\r\nHost: zxcv.com\r\n\r\n".getBytes
+//
+//  process(HTTP_request)
 
   ////////////
 
