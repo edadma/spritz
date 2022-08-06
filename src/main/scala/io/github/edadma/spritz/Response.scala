@@ -7,7 +7,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Codec
 
-class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
+class Response(serverName: Option[String], zoneId: ZoneId = ZoneId.of("GMT")):
   var statusCode: Option[Int] = None
   var statusMessage: String = "None"
   val headers = new mutable.LinkedHashMap[String, String]
@@ -43,7 +43,7 @@ class Response(serverName: String, zoneId: ZoneId = ZoneId.of("GMT")):
     this
 
   def responseArray: Array[Byte] =
-    setIfNot("Server") { serverName }
+    serverName foreach (n => setIfNot("Server") { n })
     setIfNot("Date") { DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now(zoneId)) }
 
     val buf = new ArrayBuffer[Byte]

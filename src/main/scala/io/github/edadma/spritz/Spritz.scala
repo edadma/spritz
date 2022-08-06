@@ -7,40 +7,40 @@ import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 
-object Server:
-  protected val router = new Router
-
-  def apply(address: String, port: Int, flags: Int, backlog: Int, val serverName: String): Router =
-    router
-
+object Spritz extends Router:
   import io.github.edadma.spritz.libuv._
   import io.github.edadma.spritz.libuvConstants._
 
-  protected class Connection(client: TCPHandle, buffer: Ptr[Buffer]) {
-
-  }
-
-  protected val connectionsMap = new mutable.HashMap[TCPHandle, Connection]
-
-  main(router)
-
-  router.use { (req, res) =>
-    res.status(500).send(s"no matching routes for path '${req.path}'")
-    HandlerResult.Done
-  }
-
   val SOCKADDR_IN = 16
-  val socketAddress: Ptr[Byte] = stackalloc[Byte](SOCKADDR_IN.toUInt)
-
-  Zone { implicit z =>
-    checkError(uv_ip4_addr(toCString(address), port, socketAddress), "uv_ip4_addr")
-  }
-
-  val server: TCPHandle = malloc(uv_handle_size(UV_TCP_T)).asInstanceOf[TCPHandle]
   val loop: Loop = uv_default_loop()
 
-  checkError(uv_tcp_init(loop, server), "uv_tcp_init(server)")
-  checkError(uv_tcp_bind(server, socketAddress, flags), "uv_tcp_bind")
+  var _serverName: Option[String] = None
+
+  def apply(serverName: String = null): Spritz.type =
+    if serverName ne null then _serverName = Some(serverName)
+    this
+
+  def listen(port: Int, flags: Int = 0, backlog: Int = 4096): Unit =
+    use { (req, res) =>
+      res.status(500).send(s"no matching routes for path '${req.path}'")
+      HandlerResult.Done
+    }
+
+    val socketAddress: Ptr[Byte] = stackalloc[Byte](SOCKADDR_IN.toUInt)
+
+    checkError(uv_ip4_addr(c"0.0.0.0", port, socketAddress), "uv_ip4_addr")
+
+    val server: TCPHandle = malloc(uv_handle_size(UV_TCP_T)).asInstanceOf[TCPHandle]
+
+    checkError(uv_tcp_init(loop, server), "uv_tcp_init(server)")
+    checkError(uv_tcp_bind(server, socketAddress, flags), "uv_tcp_bind")
+    checkError(uv_listen(server, backlog, onConnectionCB), "uv_tcp_listen")
+    println(s"listening on port $port")
+    uv_run(loop, UV_RUN_DEFAULT)
+
+  protected class Connection(client: TCPHandle, buffer: Ptr[Buffer]) {}
+
+  protected val connectionsMap = new mutable.HashMap[TCPHandle, Connection]
 
   val ALLOC_SIZE = 1024
 
@@ -101,10 +101,6 @@ object Server:
       checkError(uv_read_start(client, allocateCB, readCB), "uv_read_start")
   end onConnectionCB
 
-  checkError(uv_listen(server, backlog, onConnectionCB), "uv_tcp_listen")
-  println(s"listening on $address:$port")
-  uv_run(loop, UV_RUN_DEFAULT)
-
   /////////////
 
 //  val HTTP_request: Array[Byte] = "GET /birds/asdf HTTP/1.1\r\nHost: zxcv.com\r\n\r\n".getBytes
@@ -125,7 +121,7 @@ object Server:
     println(RequestParser.elems)
     pprintln(RequestParser.body)
 
-    val res = new Response(serverName)
+    val res = new Response(_serverName)
 
     if RequestParser.elems.length < 3 || (RequestParser.elems.length - 3) % 2 != 0 then res.sendStatus(400)
     else
@@ -141,7 +137,7 @@ object Server:
           RequestParser.elems(1),
         )
 
-      router(req, res)
+      apply(req, res)
       respond(res)
   end process
 
