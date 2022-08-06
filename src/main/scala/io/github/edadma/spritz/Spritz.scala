@@ -79,13 +79,17 @@ object Spritz extends Router:
         println(s"read: size = $size")
         val conn = connectionMap(client)
 
-        for i <- 0 until size.toInt do conn.parser send !(buffer._1 + i)
+        try for i <- 0 until size.toInt do conn.parser send !(buffer._1 + i)
+        catch
+          case e: Exception =>
+            respond(new Response(_serverName).sendStatus(400))
+            shutdown(client)
 
         free(buffer._1)
 
         if conn.parser.isDone then
-          println("received full request")
-          println(conn.parser)
+          process(conn.parser)
+          shutdown(client)
   end readCB
 
   val closeCB: CloseCB =
@@ -105,14 +109,6 @@ object Spritz extends Router:
       connectionMap(client) = new Connection
   end onConnectionCB
 
-  /////////////
-
-//  val HTTP_request: Array[Byte] = "GET /birds/asdf HTTP/1.1\r\nHost: zxcv.com\r\n\r\n".getBytes
-//
-//  process(HTTP_request)
-
-  ////////////
-
   def checkError(v: Int, label: String): Unit =
     if v != 0 then
       val error = fromCString(uv_err_name(v))
@@ -120,22 +116,17 @@ object Spritz extends Router:
 
       sys.error(s"$label error: $error: $message")
 
-  def process(httpreq: Array[Byte]): Unit =
-    val parser = new RequestParser
+  def process(httpreq: RequestParser): Unit =
     val res = new Response(_serverName)
-
-//    Try(parser run httpreq) // res.sendStatus(400)
-    println(parser.requestLine)
-    pprintln(parser.body)
 
     val req =
       Request(
-        parser.requestLine.head.asInstanceOf[Method],
-        parser.requestLine(1),
-        parser.headers.toMap,
+        httpreq.requestLine.head.asInstanceOf[Method],
+        httpreq.requestLine(1),
+        httpreq.headers.toMap,
         Map(),
         "",
-        parser.requestLine(1),
+        httpreq.requestLine(1),
       )
 
     apply(req, res)
@@ -143,4 +134,4 @@ object Spritz extends Router:
   end process
 
   def respond(res: Response): Unit =
-    println(res)
+    println("respond")
