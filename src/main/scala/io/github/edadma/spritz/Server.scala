@@ -15,7 +15,7 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
 
   protected val router = new Router
 
-  protected class Connection(buf: Ptr[Buffter], client: TCPHandle) {
+  protected class Connection(client: TCPHandle, buffer: Ptr[Buffter]) {
 
   }
 
@@ -47,6 +47,7 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
     (client: TCPHandle, size: CSize, buffer: Ptr[Buffer]) =>
       buffer._1 = malloc(ALLOC_SIZE.toUInt)
       buffer._2 = ALLOC_SIZE.toUInt
+      connectionsMap(client) = new Connection(client, buffer)
 
   def shutdown(client: TCPHandle): Unit = {
     val shutdown_req = malloc(uv_req_size(UV_SHUTDOWN_REQ_T))
@@ -69,8 +70,8 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
         shutdown(client)
       else
         try
-          val parsed_request = HTTP.parseRequest(buffer._1, size)
-          val response = router(parsed_request)
+//          val parsed_request = HTTP.parseRequest(buffer._1, size)
+//          val response = router(parsed_request)
 
           println("send_response(client, response)")
           shutdown(client)
