@@ -16,7 +16,7 @@ class Router extends RequestHandler:
 
     def regex(elem: RouteAST): Unit =
       elem match
-        case Slash                     => buf ++= "/?"
+        case Slash                     => buf ++= "/"
         case RouteAST.Literal(segment) => buf ++= segment
         case RouteAST.Parameter(name) =>
           buf ++= s"(?<$name>[^/#\\?]+)"
@@ -24,7 +24,11 @@ class Router extends RequestHandler:
         case RouteAST.Sequence(elems) => elems foreach regex
 
     buf += '^'
-    regex(RouteParser(path))
+
+    RouteParser(path) match
+      case Slash => buf ++= "/?"
+      case ast   => regex(ast)
+
     (buf.toString.r, groups.toSeq)
 
   def get(path: String, handler: EndpointHandler): Router =

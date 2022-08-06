@@ -9,7 +9,10 @@ object RouteParser extends RegexParsers:
   override val skipWhitespace = false
 
   def route: Parser[RouteAST] =
-    rep1(segment) ^^ RouteAST.Sequence.apply
+    rep1(segment) ^^ {
+      case List(s) => s
+      case l       => RouteAST.Sequence(l)
+    }
 
   def segment: Parser[RouteAST] =
     "/" ~ rep(piece) ^^ {
