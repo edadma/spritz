@@ -10,7 +10,7 @@ import scala.language.postfixOps
       .get("/", (req, res) => res.send("<p>=> /birds</p>"))
       .get("/:id", (req, res) => res.send(("=> /birds/:id", req)))
 
-  new Server("ETA_SERVER/0.0.1") {
+  new Server("0.0.0.0", 8000, 0, 4096, "ETA_SERVER/0.0.1") {
     def main = { app =>
       app.use("/birds", birds)
     }

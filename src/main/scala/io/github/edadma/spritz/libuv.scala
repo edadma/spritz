@@ -28,7 +28,7 @@ object libuv {
 
   type Buffer = CStruct2[Ptr[Byte], CSize]
   type TCPHandle = Ptr[Ptr[Byte]]
-  type ConnectionCB = CFuncPtr2[TCPHandle, Int, Unit]
+  type uv_connection_cb = CFuncPtr2[TCPHandle, Int, Unit]
   type WriteReq = Ptr[Ptr[Byte]]
   type ShutdownReq = Ptr[Ptr[Byte]]
 
@@ -36,7 +36,7 @@ object libuv {
 
   def uv_tcp_bind(tcp_handle: TCPHandle, address: Ptr[Byte], flags: Int): Int =
     extern
-  def uv_listen(stream_handle: TCPHandle, backlog: Int, uv_connection_cb: ConnectionCB): Int = extern
+  def uv_listen(stream_handle: TCPHandle, backlog: Int, uv_connection_cb: uv_connection_cb): Int = extern
   def uv_accept(server: TCPHandle, client: TCPHandle): Int = extern
 
   def uv_read_start(client: TCPHandle, allocCB: AllocCB, readCB: ReadCB): Int =
