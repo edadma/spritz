@@ -15,7 +15,7 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
 
   protected val router = new Router
 
-  protected class Connection(client: TCPHandle, buffer: Ptr[Buffter]) {
+  protected class Connection(client: TCPHandle, buffer: Ptr[Buffer]) {
 
   }
 
@@ -64,7 +64,7 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
       free(shutdownReq.asInstanceOf[Ptr[Byte]])
     }
 
-  val readCB: ReadCB =
+  val readCB: uv_read_cb =
     (client: TCPHandle, size: CSSize, buffer: Ptr[Buffer]) =>
       if (size < 0)
         shutdown(client)
@@ -85,6 +85,7 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
     (client: TCPHandle) =>
       println("closed client connection")
       connectionsMap -= client
+      ()
   end closeCB
 
   val onConnectionCB: uv_connection_cb =
