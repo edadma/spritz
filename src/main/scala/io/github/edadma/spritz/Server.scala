@@ -7,13 +7,14 @@ import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 
-abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val serverName: String):
+object Server:
+  protected val router = new Router
+
+  def apply(address: String, port: Int, flags: Int, backlog: Int, val serverName: String): Router =
+    router
+
   import io.github.edadma.spritz.libuv._
   import io.github.edadma.spritz.libuvConstants._
-
-  def main: Router => Unit
-
-  protected val router = new Router
 
   protected class Connection(client: TCPHandle, buffer: Ptr[Buffer]) {
 
