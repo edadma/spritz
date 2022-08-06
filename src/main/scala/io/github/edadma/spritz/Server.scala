@@ -2,6 +2,7 @@ package io.github.edadma.spritz
 
 import pprint.pprintln
 
+import scala.collection.mutable
 import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
@@ -13,6 +14,12 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
   def main: Router => Unit
 
   protected val router = new Router
+
+  protected class Connection(buf: Ptr[Buffter], client: TCPHandle) {
+
+  }
+
+  protected val connectionsMap = new mutable.HashMap[TCPHandle, Connection]
 
   main(router)
 
@@ -57,28 +64,27 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
     }
 
   val readCB: ReadCB =
-    (client: TCPHandle, size: CSSize, buffer: Ptr[Buffer]) => {
-      if (size < 0) {
+    (client: TCPHandle, size: CSSize, buffer: Ptr[Buffer]) =>
+      if (size < 0)
         shutdown(client)
-      } else {
-        try {
+      else
+        try
           val parsed_request = HTTP.parseRequest(buffer._1, size)
           val response = router(parsed_request)
-          send_response(client, response)
+
+          println("send_response(client, response)")
           shutdown(client)
-        } catch {
+        catch
           case e: Throwable =>
-            println(s"error during parsing: ${e}")
+            println(s"error during parsing: $e")
             shutdown(client)
-        }
-      }
-    }
+  end readCB
 
   val closeCB: CloseCB =
-    (client: TCPHandle) => {
+    (client: TCPHandle) =>
       println("closed client connection")
-      // todo: remove client state
-    }
+      connectionsMap -= client
+  end closeCB
 
   val onConnectionCB: uv_connection_cb =
     (handle: TCPHandle, status: Int) =>
