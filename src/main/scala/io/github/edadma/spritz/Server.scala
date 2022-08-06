@@ -41,18 +41,18 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
       println("received connection")
 
       // initialize the new client tcp handle and its state
-//      val client = malloc(uv_handle_size(UV_TCP_T)).asInstanceOf[TCPHandle]
-//
-//      check_error(uv_tcp_init(loop, client), "uv_tcp_init(client)")
-//
+      val client = malloc(uv_handle_size(UV_TCP_T)).asInstanceOf[TCPHandle]
+
+      checkError(uv_tcp_init(loop, client), "uv_tcp_init(client)")
+
 //      var client_state_ptr = (!client).asInstanceOf[Ptr[ClientState]]
 //
 //      client_state_ptr = initialize_client_state(client)
-//
-//      // accept the incoming connection into the new handle
-//      check_error(uv_accept(handle, client), "uv_accept")
-//      // set up callbacks for incoming data
-//      check_error(uv_read_start(client, allocCB, readCB), "uv_read_start")
+
+      // accept the incoming connection into the new handle
+      checkError(uv_accept(handle, client), "uv_accept")
+      // set up callbacks for incoming data
+      checkError(uv_read_start(client, allocCB, readCB), "uv_read_start")
   end onConnection
 
   checkError(uv_listen(server, backlog, onConnection), "uv_tcp_listen")

@@ -34,13 +34,11 @@ object libuv {
 
   def uv_tcp_init(loop: Loop, tcp_handle: TCPHandle): Int = extern
 
-  def uv_tcp_bind(tcp_handle: TCPHandle, address: Ptr[Byte], flags: Int): Int =
-    extern
+  def uv_tcp_bind(tcp_handle: TCPHandle, address: Ptr[Byte], flags: Int): Int = extern
   def uv_listen(stream_handle: TCPHandle, backlog: Int, uv_connection_cb: uv_connection_cb): Int = extern
   def uv_accept(server: TCPHandle, client: TCPHandle): Int = extern
 
-  def uv_read_start(client: TCPHandle, allocCB: AllocCB, readCB: ReadCB): Int =
-    extern
+  def uv_read_start(stream: TCPHandle, uv_alloc_cb: uv_alloc_cb, uv_read_cb: uv_read_cb): Int = extern
   def uv_write(writeReq: WriteReq, client: TCPHandle, bufs: Ptr[Buffer], numBufs: Int, writeCB: WriteCB): Int = extern
   def uv_shutdown(shutdownReq: ShutdownReq, client: TCPHandle, shutdownCB: ShutdownCB): Int = extern
   def uv_close(handle: TCPHandle, closeCB: CloseCB): Int = extern
@@ -48,8 +46,8 @@ object libuv {
   def uv_ip4_addr(address: CString, port: Int, out_addr: Ptr[Byte]): Int = extern
   def uv_ip4_name(address: Ptr[Byte], s: CString, size: Int): Int = extern
 
-  type AllocCB = CFuncPtr3[TCPHandle, CSize, Ptr[Buffer], Unit]
-  type ReadCB = CFuncPtr3[TCPHandle, CSSize, Ptr[Buffer], Unit]
+  type uv_alloc_cb = CFuncPtr3[TCPHandle, CSize, Ptr[Buffer], Unit]
+  type uv_read_cb = CFuncPtr3[TCPHandle, CSSize, Ptr[Buffer], Unit]
   type WriteCB = CFuncPtr2[WriteReq, Int, Unit]
   type ShutdownCB = CFuncPtr2[ShutdownReq, Int, Unit]
   type CloseCB = CFuncPtr1[TCPHandle, Unit]
