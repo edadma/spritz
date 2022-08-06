@@ -16,7 +16,7 @@ import scala.language.postfixOps
 //  app.listen(8000)
 
   val p = new RequestParser
-  val r: Array[Byte] = "GET /birds/asdf HTTP/1.1\r\nHost: zxcv.com\r\n\r\n".getBytes
+  val r: Array[Byte] = "POST /birds/asdf HTTP/1.1\r\nHost: zxcv.com\r\nContent-Length: 4\r\n\r\nqwer".getBytes
 
-  p run r
+  r foreach (p send _)
   println(p)

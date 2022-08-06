@@ -14,7 +14,13 @@ abstract class Machine:
 
   def isDone: Boolean = state == DONE
 
-  def pushback(): Unit = idx -= 1
+  var pushedback: Int = 0
+  var full = false
+
+  def pushback(a: Int): Unit =
+    if full then sys.error(s"pushback buffer full: $pushedback")
+    full = true
+    pushedback = a
 
   protected def goto(next: State): Unit =
     next.enter()
@@ -31,21 +37,24 @@ abstract class Machine:
     if trace then println(s"$state =direct> $next")
     goto(next)
 
-  def run(input: Array[Byte]): Unit =
+  def send(a: Int): Unit =
+    def send(a: Int): Unit =
+      if trace then
+        println(s"$state <- $a (${if a == '\r' then "\\r" else if a == '\n' then "\\n" else a.toChar.toString})")
+
+      state on a
+
     if !started then
       started = true
       transition(start)
 
-    while idx < input.length && state != DONE do
-      val b = input(idx)
+    received += 1
+    send(a)
 
-      if trace then
-        println(s"$state <- $b (${if b == '\r' then "\\r" else if b == '\n' then "\\n" else b.toChar.toString})")
-
-      idx += 1
-      received += 1
-      state on b
-  end run
+    while full do
+      full = false
+      send(pushedback)
+  end send
 
   abstract class State:
     def on: PartialFunction[Int, Unit]

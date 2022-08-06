@@ -67,26 +67,37 @@ class RequestParser extends Machine:
 
   case object blankState extends State:
     def on = {
-      case '\n' => transition(bodyState)
-      case _    => br
+      case '\n' =>
+        transition(if headers contains "Content-Length" then bodyState else DONE)
+      case _ => br
     }
 
   case object bodyState extends State:
+    var len: Int = 0
+
+    override def enter(): Unit =
+      len = headers("Content-Length").toInt
+
+      if len == 0 then transition(DONE)
+
     def on = { case b =>
       body += b.toByte
+
+      if body.length == len then transition(DONE)
     }
 
   case object key2valueState extends State:
     def on = {
       case ' '         =>
       case '\r' | '\n' => br
-      case _ =>
-        pushback()
+      case v =>
+        pushback(v)
         transition(valueState)
     }
 
   case object methodState extends RequestLineState(pathState)
   case object pathState extends RequestLineState(versionState)
 
-  override def toString: String = s"${super.toString}, request line: [$requestLine], headers: $headers, body: $body"
+  override def toString: String =
+    s"${super.toString}, request line: [$requestLine], headers: $headers, body: $body, length: ${body.length}"
 end RequestParser

@@ -41,7 +41,7 @@ object Spritz extends Router:
     uv_run(loop, UV_RUN_DEFAULT)
 
   protected class Connection:
-    val request = new ArrayBuffer[Byte]
+    val parser = new RequestParser
 
   protected val connectionMap = new mutable.HashMap[TCPHandle, Connection]
 
@@ -71,7 +71,7 @@ object Spritz extends Router:
 
       val conn = connectionMap(client)
 
-      println((conn, conn.request))
+      println((conn, conn.parser))
 
       ////////
 
@@ -82,15 +82,14 @@ object Spritz extends Router:
   val readCB: uv_read_cb =
     (client: TCPHandle, size: CSSize, buffer: Ptr[Buffer]) =>
       if (size < 0)
-        println(s"send response: req size = ${connectionMap(client).request.length}")
+        println(s"send response: req size = ${connectionMap(client).parser.received}")
         shutdown(client)
       else
         println(s"read: size = $size")
         val conn = connectionMap(client)
 
-        for i <- 0 until size.toInt do conn.request += !(buffer._1 + i)
+        for i <- 0 until size.toInt do conn.parser send !(buffer._1 + i)
 
-        println((conn, conn.request))
         free(buffer._1)
   end readCB
 
@@ -130,7 +129,7 @@ object Spritz extends Router:
     val parser = new RequestParser
     val res = new Response(_serverName)
 
-    Try(parser run httpreq) // res.sendStatus(400)
+//    Try(parser run httpreq) // res.sendStatus(400)
     println(parser.requestLine)
     pprintln(parser.body)
 
