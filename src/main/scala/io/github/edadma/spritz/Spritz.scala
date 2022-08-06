@@ -82,13 +82,13 @@ object Spritz extends Router:
         try for i <- 0 until size.toInt do conn.parser send !(buffer._1 + i)
         catch
           case e: Exception =>
-            respond(new Response(_serverName).sendStatus(400))
+            respond(new Response(_serverName).sendStatus(400), client)
             shutdown(client)
 
         free(buffer._1)
 
         if conn.parser.isDone then
-          process(conn.parser)
+          process(conn.parser, client)
           shutdown(client)
   end readCB
 
@@ -116,7 +116,7 @@ object Spritz extends Router:
 
       sys.error(s"$label error: $error: $message")
 
-  def process(httpreq: RequestParser): Unit =
+  def process(httpreq: RequestParser, client: TCPHandle): Unit =
     val res = new Response(_serverName)
 
     val req =
@@ -130,8 +130,28 @@ object Spritz extends Router:
       )
 
     apply(req, res)
-    respond(res)
+    respond(res, client)
   end process
 
-  def respond(res: Response): Unit =
-    println("respond")
+  val writeCB: uv_write_cb =
+    (writeReq: WriteReq, status: Int) =>
+      println("write completed")
+
+      val buffer = (!writeReq).asInstanceOf[Ptr[Buffer]]
+
+      free(buffer._1)
+      free(buffer.asInstanceOf[Ptr[Byte]])
+      free(writeReq.asInstanceOf[Ptr[Byte]])
+
+  def respond(res: Response, client: TCPHandle): Unit =
+    val writeReq = malloc(uv_req_size(UV_WRITE_REQ_T)).asInstanceOf[WriteReq]
+    val buffer = malloc(sizeof[Buffer]).asInstanceOf[Ptr[Buffer]]
+    val array = res.responseArray
+    val data = malloc(array.length.toUInt)
+
+    for i <- array.indices do data(i) = array(i)
+
+    buffer._1 = data
+    buffer._2 = array.length.toUInt
+    !writeReq = buffer.asInstanceOf[Ptr[Byte]]
+    checkError(uv_write(writeReq, client, buffer, 1, writeCB), "uv_write")
