@@ -37,7 +37,6 @@ object Spritz extends Router:
     checkError(uv_tcp_init(loop, server), "uv_tcp_init(server)")
     checkError(uv_tcp_bind(server, socketAddress, flags), "uv_tcp_bind")
     checkError(uv_listen(server, backlog, onConnectionCB), "uv_tcp_listen")
-    println(s"listening on port $port")
     uv_run(loop, UV_RUN_DEFAULT)
 
   protected class Connection:
@@ -47,7 +46,7 @@ object Spritz extends Router:
 
   val ALLOC_SIZE = 1024
 
-  val allocateCB: uv_alloc_cb =
+  val allocateCB: AllocCB =
     (client: TCPHandle, size: CSize, buffer: Ptr[Buffer]) =>
       buffer._1 = malloc(ALLOC_SIZE.toUInt)
       buffer._2 = ALLOC_SIZE.toUInt
@@ -61,22 +60,16 @@ object Spritz extends Router:
 
   val shutdownCB: ShutdownCB =
     (shutdownReq: ShutdownReq, status: Int) =>
-      println("all pending writes complete, closing TCP connection")
       val client = (!shutdownReq).asInstanceOf[TCPHandle]
-      /*checkError(*/
-      uv_close(client, closeCB) /*, "uv_close")*/
+
+      uv_close(client, closeCB)
       free(shutdownReq.asInstanceOf[Ptr[Byte]])
-      connectionMap -= client
-      ()
   end shutdownCB
 
-  val readCB: uv_read_cb =
+  val readCB: ReadCB =
     (client: TCPHandle, size: CSSize, buffer: Ptr[Buffer]) =>
-      if (size < 0)
-        println(s"send response: req size = ${connectionMap(client).parser.received}")
-        shutdown(client)
+      if (size < 0) shutdown(client)
       else
-        println(s"read: size = $size")
         val conn = connectionMap(client)
 
         try for i <- 0 until size.toInt do conn.parser send !(buffer._1 + i)
@@ -93,14 +86,14 @@ object Spritz extends Router:
   end readCB
 
   val closeCB: CloseCB =
-    (client: TCPHandle) => println("closed client connection")
+    (client: TCPHandle) =>
+      free(client.asInstanceOf[Ptr[Byte]])
+      connectionMap -= client
+      ()
   end closeCB
 
-  val onConnectionCB: uv_connection_cb =
+  val onConnectionCB: ConnectionCB =
     (handle: TCPHandle, status: Int) =>
-      println("received connection")
-
-      // initialize the new client tcp handle and its state
       val client = malloc(uv_handle_size(UV_TCP_T)).asInstanceOf[TCPHandle]
 
       checkError(uv_tcp_init(loop, client), "uv_tcp_init(client)")
@@ -133,10 +126,8 @@ object Spritz extends Router:
     respond(res, client)
   end process
 
-  val writeCB: uv_write_cb =
+  val writeCB: WriteCB =
     (writeReq: WriteReq, status: Int) =>
-      println("write completed")
-
       val buffer = (!writeReq).asInstanceOf[Ptr[Buffer]]
 
       free(buffer._1)

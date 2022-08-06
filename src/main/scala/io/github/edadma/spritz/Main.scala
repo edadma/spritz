@@ -10,3 +10,4 @@ package io.github.edadma.spritz
 
   app.use("/birds", birds)
   app.listen(8000)
+  println("listening on port 8000")
