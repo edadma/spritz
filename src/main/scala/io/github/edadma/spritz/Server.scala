@@ -70,7 +70,7 @@ abstract class Server(address: String, port: Int, flags: Int, backlog: Int, val 
       val error = fromCString(uv_err_name(v))
       val message = fromCString(uv_strerror(v))
 
-      sys.error(s"$label returned $v: $error: $message")
+      sys.error(s"$label error: $error: $message")
 
   def process(httpreq: Array[Byte]): Unit =
     RequestParser run httpreq
