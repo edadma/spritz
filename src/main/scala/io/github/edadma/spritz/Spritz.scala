@@ -7,6 +7,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
+import scala.util.{Try, Success, Failure}
 
 object Spritz extends Router:
   import io.github.edadma.spritz.libuv._
@@ -127,29 +128,24 @@ object Spritz extends Router:
 
   def process(httpreq: Array[Byte]): Unit =
     val parser = new RequestParser
-
-    parser run httpreq
-    println(parser.elems)
-    pprintln(parser.body)
-
     val res = new Response(_serverName)
 
-    if parser.elems.length < 3 || (parser.elems.length - 3) % 2 != 0 then res.sendStatus(400)
-    else
-      pprintln(parser.elems drop 2)
+    Try(parser run httpreq) // res.sendStatus(400)
+    println(parser.requestLine)
+    pprintln(parser.body)
 
-      val req =
-        Request(
-          parser.elems.head.asInstanceOf[Method],
-          parser.elems(1),
-          parser.elems drop 3 grouped 2 map (c => (c.head, c.tail.head)) toMap,
-          Map(),
-          "",
-          parser.elems(1),
-        )
+    val req =
+      Request(
+        parser.requestLine.head.asInstanceOf[Method],
+        parser.requestLine(1),
+        parser.headers.toMap,
+        Map(),
+        "",
+        parser.requestLine(1),
+      )
 
-      apply(req, res)
-      respond(res)
+    apply(req, res)
+    respond(res)
   end process
 
   def respond(res: Response): Unit =
