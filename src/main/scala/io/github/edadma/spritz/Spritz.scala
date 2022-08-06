@@ -3,6 +3,7 @@ package io.github.edadma.spritz
 import pprint.pprintln
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
@@ -38,9 +39,10 @@ object Spritz extends Router:
     println(s"listening on port $port")
     uv_run(loop, UV_RUN_DEFAULT)
 
-  protected class Connection(client: TCPHandle, buffer: Ptr[Buffer]) {}
+  protected class Connection:
+    val request = new ArrayBuffer[Byte]
 
-  protected val connectionsMap = new mutable.HashMap[TCPHandle, Connection]
+  protected val connectionMap = new mutable.HashMap[TCPHandle, Connection]
 
   val ALLOC_SIZE = 1024
 
@@ -48,7 +50,6 @@ object Spritz extends Router:
     (client: TCPHandle, size: CSize, buffer: Ptr[Buffer]) =>
       buffer._1 = malloc(ALLOC_SIZE.toUInt)
       buffer._2 = ALLOC_SIZE.toUInt
-      connectionsMap(client) = new Connection(client, buffer)
 
   def shutdown(client: TCPHandle): Unit = {
     val shutdown_req = malloc(uv_req_size(UV_SHUTDOWN_REQ_T))
@@ -58,35 +59,42 @@ object Spritz extends Router:
   }
 
   val shutdownCB: ShutdownCB =
-    (shutdownReq: ShutdownReq, status: Int) => {
+    (shutdownReq: ShutdownReq, status: Int) =>
       println("all pending writes complete, closing TCP connection")
       val client = (!shutdownReq).asInstanceOf[TCPHandle]
-      checkError(uv_close(client, closeCB), "uv_close")
+      /*checkError(*/
+      uv_close(client, closeCB) /*, "uv_close")*/
       free(shutdownReq.asInstanceOf[Ptr[Byte]])
-    }
+
+      ////////
+
+      val conn = connectionMap(client)
+
+      println((conn, conn.request))
+
+      ////////
+
+      connectionMap -= client
+      ()
+  end shutdownCB
 
   val readCB: uv_read_cb =
     (client: TCPHandle, size: CSSize, buffer: Ptr[Buffer]) =>
       if (size < 0)
+        println(s"send response: req size = ${connectionMap(client).request.length}")
         shutdown(client)
       else
-        try
-//          val parsed_request = HTTP.parseRequest(buffer._1, size)
-//          val response = router(parsed_request)
+        println(s"read: size = $size")
+        val conn = connectionMap(client)
 
-          println("send_response(client, response)")
-          shutdown(client)
-        catch
-          case e: Throwable =>
-            println(s"error during parsing: $e")
-            shutdown(client)
+        for i <- 0 until size.toInt do conn.request += !(buffer._1 + i)
+
+        println((conn, conn.request))
+        free(buffer._1)
   end readCB
 
   val closeCB: CloseCB =
-    (client: TCPHandle) =>
-      println("closed client connection")
-      connectionsMap -= client
-      ()
+    (client: TCPHandle) => println("closed client connection")
   end closeCB
 
   val onConnectionCB: uv_connection_cb =
@@ -99,6 +107,7 @@ object Spritz extends Router:
       checkError(uv_tcp_init(loop, client), "uv_tcp_init(client)")
       checkError(uv_accept(handle, client), "uv_accept")
       checkError(uv_read_start(client, allocateCB, readCB), "uv_read_start")
+      connectionMap(client) = new Connection
   end onConnectionCB
 
   /////////////
@@ -117,24 +126,26 @@ object Spritz extends Router:
       sys.error(s"$label error: $error: $message")
 
   def process(httpreq: Array[Byte]): Unit =
-    RequestParser run httpreq
-    println(RequestParser.elems)
-    pprintln(RequestParser.body)
+    val parser = new RequestParser
+
+    parser run httpreq
+    println(parser.elems)
+    pprintln(parser.body)
 
     val res = new Response(_serverName)
 
-    if RequestParser.elems.length < 3 || (RequestParser.elems.length - 3) % 2 != 0 then res.sendStatus(400)
+    if parser.elems.length < 3 || (parser.elems.length - 3) % 2 != 0 then res.sendStatus(400)
     else
-      pprintln(RequestParser.elems drop 2)
+      pprintln(parser.elems drop 2)
 
       val req =
         Request(
-          RequestParser.elems.head.asInstanceOf[Method],
-          RequestParser.elems(1),
-          RequestParser.elems drop 3 grouped 2 map (c => (c.head, c.tail.head)) toMap,
+          parser.elems.head.asInstanceOf[Method],
+          parser.elems(1),
+          parser.elems drop 3 grouped 2 map (c => (c.head, c.tail.head)) toMap,
           Map(),
           "",
-          RequestParser.elems(1),
+          parser.elems(1),
         )
 
       apply(req, res)

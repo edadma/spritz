@@ -2,7 +2,7 @@ package io.github.edadma.spritz
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
-object RequestParser extends Machine:
+class RequestParser extends Machine:
   val start: State = methodState
 
   val elems = new ListBuffer[String]
