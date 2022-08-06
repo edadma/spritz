@@ -9,7 +9,7 @@ import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 import scala.util.{Try, Success, Failure}
 
-object Spritz extends Router:
+object Server extends Router:
   import io.github.edadma.spritz.libuv._
   import io.github.edadma.spritz.libuvConstants._
 
@@ -18,15 +18,16 @@ object Spritz extends Router:
 
   var _serverName: Option[String] = None
 
-  def apply(serverName: String = null): Spritz.type =
-    if serverName ne null then _serverName = Some(serverName)
-    this
-
-  def listen(port: Int, flags: Int = 0, backlog: Int = 4096): Unit =
+  def apply(routing: Server.type => Unit): Unit =
+    routing(this)
     use { (req, res) =>
       res.status(404).send(s"no matching routes for path '${req.path}'")
       HandlerResult.Done
     }
+    uv_run(loop, UV_RUN_DEFAULT)
+
+  def listen(port: Int, serverName: String = null, flags: Int = 0, backlog: Int = 4096): Unit =
+    if serverName ne null then _serverName = Some(serverName)
 
     val socketAddress: Ptr[Byte] = stackalloc[Byte](SOCKADDR_IN.toUInt)
 
@@ -37,7 +38,6 @@ object Spritz extends Router:
     checkError(uv_tcp_init(loop, server), "uv_tcp_init(server)")
     checkError(uv_tcp_bind(server, socketAddress, flags), "uv_tcp_bind")
     checkError(uv_listen(server, backlog, onConnectionCB), "uv_tcp_listen")
-    uv_run(loop, UV_RUN_DEFAULT)
 
   protected class Connection:
     val parser = new RequestParser
@@ -81,7 +81,9 @@ object Spritz extends Router:
         free(buffer._1)
 
         if conn.parser.isDone then
-          process(conn.parser, client)
+          try process(conn.parser, client)
+          catch case e: Exception => respond(new Response(_serverName).sendStatus(500), client)
+
           shutdown(client)
   end readCB
 

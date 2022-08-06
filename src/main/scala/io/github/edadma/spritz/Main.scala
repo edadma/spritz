@@ -6,8 +6,8 @@ package io.github.edadma.spritz
       .get("/", (req, res) => res.send("<p>=> /birds</p>"))
       .get("/:id", (req, res) => res.send(("=> /birds/:id", req)))
 
-  val app = Spritz("ETA_SERVER/0.0.1")
-
-  app.use("/birds", birds)
-  app.listen(8000)
-  println("listening on port 8000")
+  Server { app =>
+    app.use("/birds", birds)
+    app.listen(8000, "ETA_SERVER/0.0.1")
+    println("listening")
+  }
