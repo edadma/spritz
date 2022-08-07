@@ -1,5 +1,7 @@
 package io.github.edadma.spritz
 
+import scala.concurrent.Future
+
 @main def run(): Unit =
 //  val birds =
 //    Router()
@@ -14,9 +16,16 @@ package io.github.edadma.spritz
 //    println("listening")
 //  }
 
-  import io.github.edadma.spritz.libuv._
-  import io.github.edadma.spritz.libuvConstants._
+  println("hello")
 
-  val loop: Loop = uv_default_loop()
+  implicit val loop: EventLoop.type = EventLoop
 
-  uv_run(loop, UV_RUN_DEFAULT)
+  println("setting up futures")
+
+  Future {
+    println("Future 1!")
+  }.map { _ =>
+    println("Future 2!")
+  }
+
+  println("main about to return...")
