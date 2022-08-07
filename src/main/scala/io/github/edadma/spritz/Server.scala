@@ -12,6 +12,7 @@ import scala.util.{Failure, Success, Try}
 object Server extends Router:
   import io.github.edadma.spritz.libuv._
   import io.github.edadma.spritz.libuvConstants._
+  import Util.checkError
 
   val SOCKADDR_IN = 16
   val loop: Loop = uv_default_loop()
@@ -103,13 +104,6 @@ object Server extends Router:
       checkError(uv_read_start(client, allocateCB, readCB), "uv_read_start")
       connectionMap(client) = new Connection
   end onConnectionCB
-
-  def checkError(v: Int, label: String): Unit =
-    if v != 0 then
-      val error = fromCString(uv_err_name(v))
-      val message = fromCString(uv_strerror(v))
-
-      sys.error(s"$label error: $error: $message")
 
   def process(httpreq: RequestParser, client: TCPHandle): Unit =
     val res = new Response(_serverName)

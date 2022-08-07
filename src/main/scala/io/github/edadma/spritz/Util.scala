@@ -1,10 +1,21 @@
 package io.github.edadma.spritz
 
+import libuv.{uv_err_name, uv_strerror}
+
 import java.nio.ByteBuffer
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Codec
+import scala.scalanative.unsafe.fromCString
 
 object Util:
+
+  def checkError(v: Int, label: String): Unit =
+    if v != 0 then
+      val error = fromCString(uv_err_name(v))
+      val message = fromCString(uv_strerror(v))
+
+      sys.error(s"$label error: $error: $message")
+
   def urlDecode(s: String, codec: Codec = Codec.UTF8): String =
     if s.indexOf('%') == -1 then s
     else
