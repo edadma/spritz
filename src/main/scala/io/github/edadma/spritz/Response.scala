@@ -31,8 +31,12 @@ class Response(serverName: Option[String], zoneId: ZoneId = ZoneId.of("GMT")):
     setIfNot("Content-Type") {
       if text startsWith "<" then "text/html; charset=UTF-8" else "text/plain; charset=UTF-8"
     }
+    send(Codec.toUTF8(text))
+
+  def send(data: Array[Byte]): Response =
+    setIfNot("Content-Type") { "application/octet-stream" }
+    body = data
     statusIfNone(200)
-    body = Codec.toUTF8(text)
     headers("Content-Length") = body.length.toString
     this
 
