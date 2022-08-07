@@ -1,12 +1,12 @@
 package io.github.edadma.spritz
 
-case class Request(
-    method: Method,
-    path: String,
-    headers: Map[String, String],
+class Request(
+    var method: Method,
+    var path: String,
+    var headers: Map[String, String],
     params: Map[String, String],
-    payload: Seq[Byte],
-    body: Map[String, Any],
-    route: String,
-    rest: String,
-)
+    val payload: Seq[Byte],
+):
+  var body: Map[String, Any] = null
+  var route: String = ""
+  var rest: String = path
