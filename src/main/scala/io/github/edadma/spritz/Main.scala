@@ -1,6 +1,7 @@
 package io.github.edadma.spritz
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 @main def run(): Unit =
 //  val birds =
@@ -16,16 +17,30 @@ import scala.concurrent.Future
 //    println("listening")
 //  }
 
+//  println("hello")
+//
+//  implicit val loop: EventLoop.type = EventLoop
+//
+//  println("setting up futures")
+//
+//  Future {
+//    println("Future 1!")
+//  }.map { _ =>
+//    println("Future 2!")
+//  }
+//
+//  println("main about to return...")
+
   println("hello")
 
   implicit val loop: EventLoop.type = EventLoop
 
-  println("setting up futures")
+  println("setting up timer")
 
-  Future {
-    println("Future 1!")
-  }.map { _ =>
-    println("Future 2!")
+  Timer.delay(2.seconds).map { _ =>
+    println("timer done!")
   }
 
-  println("main about to return...")
+  println("about to invoke loop.run()")
+  loop.run()
+  println("done!")
