@@ -13,4 +13,5 @@ class Request(
   var route: String = ""
   var rest: String = path
 
-  override def toString: String = s"$method $path headers=[${headers.mkString(", ")}] params=[${params.mkString(", ")}]"
+  override def toString: String =
+    s"$method $path headers=[${headers.mkString(", ")}] params=[${params.mkString(", ")}] body=$body"

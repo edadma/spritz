@@ -5,7 +5,7 @@ package io.github.edadma.spritz
     Router()
       .get("/", (req, res) => res.send(("get /birds", req.headers("accept"))))
       .get("/:id", (req, res) => res.send(("get /birds/:id", req)))
-      .post("/:id", (req, res) => res.send(("post /birds/:id", req.body)))
+      .post("/:id", (req, res) => res.send(("post /birds/:id", req)))
 
   Server { app =>
     app.use(middleware.JSON)

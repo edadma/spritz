@@ -57,6 +57,11 @@ class Router extends RequestHandler:
     routes += Route.Middleware(middleware)
     this
 
+  protected def routeMatch(req: Request, params: Seq[String], m: Regex.Match): Unit =
+    params foreach (k => req.params(k) = Util.urlDecode(m.group(k)))
+    req.route ++= req.rest.substring(0, m.end)
+    req.rest = req.rest.substring(m.end)
+
   def apply(req: Request, res: Response): HandlerResult =
     for route <- routes do
       route match
@@ -64,18 +69,14 @@ class Router extends RequestHandler:
           if method == req.method then
             path.findPrefixMatchOf(req.rest) match
               case Some(m) if m.end == req.rest.length =>
-                params foreach (k => req.params(k) = m.group(k))
-                req.route ++= req.rest.substring(0, m.end)
-                req.rest = req.rest.substring(m.end)
+                routeMatch(req, params, m)
                 handler(req, res)
                 return HandlerResult.Done
               case _ =>
         case Route.PathRoutes(path, params, handler) =>
           path.findPrefixMatchOf(req.rest) match
             case Some(m) =>
-              params foreach (k => req.params(k) = m.group(k))
-              req.route ++= req.rest.substring(0, m.end)
-              req.rest = req.rest.substring(m.end)
+              routeMatch(req, params, m)
               handler(req, res) match
                 case HandlerResult.Done       => return HandlerResult.Done
                 case HandlerResult.Next       =>
