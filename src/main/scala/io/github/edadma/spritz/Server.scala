@@ -2,12 +2,13 @@ package io.github.edadma.spritz
 
 import pprint.pprintln
 
+import scala.collection.immutable
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 
 object Server extends Router:
   import io.github.edadma.spritz.libuv._
@@ -120,6 +121,8 @@ object Server extends Router:
         httpreq.requestLine(1),
         httpreq.headers.toMap,
         Map(),
+        httpreq.body to immutable.ArraySeq,
+        null,
         "",
         httpreq.requestLine(1),
       )
