@@ -27,12 +27,6 @@ class Response(serverName: Option[String], zoneId: ZoneId = ZoneId.of("GMT")):
     status(code).send(s"<h1>${HTTP.statusMessageString(code)}</h1>")
     this
 
-  def send(text: String): Response =
-    setIfNot("Content-Type") {
-      if text startsWith "<" then "text/html; charset=UTF-8" else "text/plain; charset=UTF-8"
-    }
-    send(Codec.toUTF8(text))
-
   def send(data: Array[Byte]): Response =
     setIfNot("Content-Type") { "application/octet-stream" }
     body = data
@@ -40,7 +34,13 @@ class Response(serverName: Option[String], zoneId: ZoneId = ZoneId.of("GMT")):
     headers("Content-Length") = body.length.toString
     this
 
-  def send(obj: Any): Response = send(obj.toString)
+  def send(obj: Any): Response =
+    val s = String.valueOf(obj)
+
+    setIfNot("Content-Type") {
+      if s startsWith "<" then "text/html; charset=UTF-8" else "text/plain; charset=UTF-8"
+    }
+    send(Codec.toUTF8(s))
 
   def setIfNot(key: String)(value: => String): Response =
     if !(headers contains key) then headers(key) = value
