@@ -7,7 +7,7 @@ class Request(
     var path: String,
     val headers: mutable.Map[String, String],
     val params: mutable.Map[String, String],
-    val payload: Seq[Byte],
+    val payload: Array[Byte],
 ):
   var body: Map[String, Any] = null
   var route: String = ""

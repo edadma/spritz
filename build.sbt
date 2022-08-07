@@ -41,10 +41,17 @@ homepage := Some(url("https://github.com/edadma/" + name.value))
 libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.12" % "test"
 
 libraryDependencies ++= Seq(
+  "org.scala-lang.modules" %%% "scala-parser-combinators" % "2.1.1",
+)
+
+libraryDependencies ++= Seq(
+  "io.github.edadma" %%% "json" % "0.1.13",
+)
+
+libraryDependencies ++= Seq(
   "com.github.scopt" %%% "scopt" % "4.1.0",
   "com.lihaoyi" %%% "pprint" % "0.7.2", /*% "test"*/
   "io.github.cquiroz" % "scala-java-time_native0.4_3" % "2.4.0",
-  "org.scala-lang.modules" %%% "scala-parser-combinators" % "2.1.1",
 )
 
 publishMavenStyle := true
