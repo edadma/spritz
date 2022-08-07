@@ -4,7 +4,10 @@ import io.github.edadma.spritz.RouteAST.Slash
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Future
 import scala.util.matching.Regex
+
+import Server.async
 
 class Router extends MiddlewareHandler:
 
@@ -34,10 +37,11 @@ class Router extends MiddlewareHandler:
   protected def endpoint(method: Method, path: String, handler: EndpointHandler): Router =
     val (pathr, params) = regex(path)
 
-    routes += Route.Endpoint(method, pathr, params, handler)
+    routes += Route.Endpoint(method, pathr, params, (req, res) => Future(handler(req, res)))
     this
 
-  def get(path: String, handler: EndpointHandler): Router = endpoint("GET", path, handler)
+  def get(path: String, handler: EndpointHandler): Router =
+    endpoint("GET", path, handler)
 
   def post(path: String, handler: EndpointHandler): Router = endpoint("POST", path, handler)
 

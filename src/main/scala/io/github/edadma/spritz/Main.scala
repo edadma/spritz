@@ -8,9 +8,9 @@ import Server.async
 @main def run(): Unit =
   val birds =
     Router()
-      .get("/", (req, res) => Future { res.send(("get /birds", req.headers("accept"))) })
-      .get("/:id", (req, res) => Future { res.send(("get /birds/:id", req)) })
-      .post("/:id", (req, res) => Future { res.send(("post /birds/:id", req)) })
+      .get("/", (req, res) => res.send(("get /birds", req.headers("accept"))))
+      .get("/:id", (req, res) => res.send(("get /birds/:id", req)))
+      .post("/:id", (req, res) => res.send(("post /birds/:id", req)))
 
   Server { app =>
     app.use(middleware.JSON)
