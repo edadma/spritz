@@ -30,7 +30,7 @@ object EventLoop extends ExecutionContextExecutor {
         catch case t: Throwable => reportFailure(t)
 
       if taskQueue.isEmpty then
-        println("stopping dispatcher")
+//        println("stopping dispatcher")
         uv_prepare_stop(handle)
 
   def execute(runnable: Runnable): Unit = {
@@ -39,7 +39,7 @@ object EventLoop extends ExecutionContextExecutor {
   }
 
   def reportFailure(t: Throwable): Unit = {
-    println(s"Future failed with Throwable $t:")
+//    println(s"Future failed with Throwable $t:")
     t.printStackTrace()
   }
 
@@ -47,7 +47,7 @@ object EventLoop extends ExecutionContextExecutor {
     var continue = 1
     while (continue != 0) {
       continue = uv_run(loop, mode)
-      println(s"uv_run returned $continue")
+//      println(s"uv_run returned $continue")
     }
   }
 

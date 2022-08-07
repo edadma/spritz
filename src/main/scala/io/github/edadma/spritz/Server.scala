@@ -14,6 +14,8 @@ object Server extends Router:
   import io.github.edadma.spritz.libuvConstants._
   import Util.checkError
 
+  implicit val async: EventLoop.type = EventLoop
+
   val SOCKADDR_IN = 16
   val loop: Loop = uv_default_loop()
 
@@ -25,7 +27,6 @@ object Server extends Router:
       res.status(404).send(s"no matching routes for path '${req.path}'")
       HandlerResult.Done
     }
-    uv_run(loop, UV_RUN_DEFAULT)
 
   def listen(port: Int, serverName: String = null, flags: Int = 0, backlog: Int = 4096): Unit =
     if serverName ne null then _serverName = Some(serverName)

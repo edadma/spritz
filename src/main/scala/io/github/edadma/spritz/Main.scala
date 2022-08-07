@@ -3,6 +3,8 @@ package io.github.edadma.spritz
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
+import Server.async
+
 @main def run(): Unit =
 //  val birds =
 //    Router()
@@ -18,9 +20,6 @@ import scala.concurrent.duration._
 //  }
 
 //  println("hello")
-//
-//  implicit val loop: EventLoop.type = EventLoop
-//
 //  println("setting up futures")
 //
 //  Future {
@@ -32,9 +31,6 @@ import scala.concurrent.duration._
 //  println("main about to return...")
 
   println("hello")
-
-  implicit val loop: EventLoop.type = EventLoop
-
   println("setting up timer")
 
   Timer.delay(2.seconds).map { _ =>
@@ -42,5 +38,4 @@ import scala.concurrent.duration._
   }
 
   println("about to invoke loop.run()")
-  loop.run()
   println("done!")
