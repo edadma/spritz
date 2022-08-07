@@ -31,11 +31,21 @@ class Router extends RequestHandler:
 
     (buf.toString.r, groups.toSeq)
 
-  def get(path: String, handler: EndpointHandler): Router =
+  protected def endpoint(method: Method, path: String, handler: EndpointHandler): Router =
     val (pathr, params) = regex(path)
 
-    routes += Route.Endpoint("GET", pathr, params, handler)
+    routes += Route.Endpoint(method, pathr, params, handler)
     this
+
+  def get(path: String, handler: EndpointHandler): Router = endpoint("GET", path, handler)
+
+  def post(path: String, handler: EndpointHandler): Router = endpoint("POST", path, handler)
+
+  def put(path: String, handler: EndpointHandler): Router = endpoint("PUT", path, handler)
+
+  def delete(path: String, handler: EndpointHandler): Router = endpoint("DELETE", path, handler)
+
+  def patch(path: String, handler: EndpointHandler): Router = endpoint("PATCH", path, handler)
 
   def use(path: String, middleware: RequestHandler): Router =
     val (pathr, params) = regex(path)

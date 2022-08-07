@@ -3,8 +3,9 @@ package io.github.edadma.spritz
 @main def run(): Unit =
   val birds =
     Router()
-      .get("/", (req, res) => res.send("<p>=> /birds</p>"))
-      .get("/:id", (req, res) => res.send(("=> /birds/:id", req)))
+      .get("/", (req, res) => res.send("get /birds"))
+      .get("/:id", (req, res) => res.send(("get /birds/:id", req)))
+      .post("/:id", (req, res) => res.send(("post /birds/:id", req)))
 
   Server { app =>
     app.use("/birds", birds)

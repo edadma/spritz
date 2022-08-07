@@ -7,7 +7,8 @@ class RequestParser extends Machine:
   val start: State = methodState
 
   val requestLine = new ListBuffer[String]
-  val headers = new mutable.HashMap[String, String]
+  val headers =
+    new mutable.TreeMap[String, String]()(scala.math.Ordering.comparatorToOrdering(String.CASE_INSENSITIVE_ORDER))
   var key: String = _
   val buf = new StringBuilder
   val body = new ArrayBuffer[Byte]

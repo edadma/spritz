@@ -6,7 +6,7 @@ type EndpointHandler = (Request, Response) => Unit
 
 type RequestHandler = (Request, Response) => HandlerResult
 
-type Method = "GET" | "POST"
+type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
 
 enum Route:
   case Endpoint(method: Method, path: Regex, params: Seq[String], handler: EndpointHandler) extends Route
