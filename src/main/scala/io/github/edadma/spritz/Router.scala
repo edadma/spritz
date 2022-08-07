@@ -64,27 +64,19 @@ class Router extends RequestHandler:
           if method == req.method then
             path.findPrefixMatchOf(req.rest) match
               case Some(m) if m.end == req.rest.length =>
-                handler(
-                  req.copy(
-                    params = req.params ++ (params map (k => k -> m.group(k))),
-                    route = req.route ++ req.rest.substring(0, m.end),
-                    rest = req.rest.substring(m.end),
-                  ),
-                  res,
-                )
+                params foreach (k => req.params(k) = m.group(k))
+                req.route ++= req.rest.substring(0, m.end)
+                req.rest = req.rest.substring(m.end)
+                handler(req, res)
                 return HandlerResult.Done
               case _ =>
         case Route.PathRoutes(path, params, handler) =>
           path.findPrefixMatchOf(req.rest) match
             case Some(m) =>
-              handler(
-                req.copy(
-                  params = req.params ++ (params map (k => k -> m.group(k))),
-                  route = req.route ++ req.rest.substring(0, m.end),
-                  rest = req.rest.substring(m.end),
-                ),
-                res,
-              ) match
+              params foreach (k => req.params(k) = m.group(k))
+              req.route ++= req.rest.substring(0, m.end)
+              req.rest = req.rest.substring(m.end)
+              handler(req, res) match
                 case HandlerResult.Done       => return HandlerResult.Done
                 case HandlerResult.Next       =>
                 case HandlerResult.Error(err) => return HandlerResult.Error(err)

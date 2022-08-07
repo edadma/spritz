@@ -2,8 +2,7 @@ package io.github.edadma.spritz
 
 import pprint.pprintln
 
-import scala.collection.immutable
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import scala.collection.mutable.ArrayBuffer
 import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
@@ -114,17 +113,13 @@ object Server extends Router:
 
   def process(httpreq: RequestParser, client: TCPHandle): Unit =
     val res = new Response(_serverName)
-
     val req =
-      Request(
+      new Request(
         httpreq.requestLine.head.asInstanceOf[Method],
         httpreq.requestLine(1),
         httpreq.headers,
-        Map(),
+        new mutable.HashMap,
         httpreq.body to immutable.ArraySeq,
-        null,
-        "",
-        httpreq.requestLine(1),
       )
 
     apply(req, res)
