@@ -1,14 +1,14 @@
 package io.github.edadma.spritz
 
-import scala.collection.mutable
+import scala.collection.immutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 class RequestParser extends Machine:
   val start: State = methodState
 
   val requestLine = new ListBuffer[String]
-  val headers =
-    new mutable.TreeMap[String, String]()(scala.math.Ordering.comparatorToOrdering(String.CASE_INSENSITIVE_ORDER))
+  var headers =
+    new immutable.TreeMap[String, String]()(scala.math.Ordering.comparatorToOrdering(String.CASE_INSENSITIVE_ORDER))
   var key: String = _
   val buf = new StringBuilder
   val body = new ArrayBuffer[Byte]
@@ -43,7 +43,7 @@ class RequestParser extends Machine:
   case object valueState extends AccState:
     def on = {
       case '\r' =>
-        headers(key) = buf.toString
+        headers += key -> buf.toString
         transition(value2keyState)
       case '\n' => br
       case b    => acc(b)
