@@ -8,6 +8,7 @@ import scala.scalanative.libc.stdlib.*
 import scala.scalanative.unsafe.*
 import scala.scalanative.unsigned.*
 import scala.util.{Failure, Success, Try}
+import scala.concurrent.Future
 
 object Server extends Router:
   import io.github.edadma.spritz.libuv._
@@ -25,7 +26,7 @@ object Server extends Router:
     routing(this)
     use { (req, res) =>
       res.status(404).send(s"no matching routes for path '${req.path}'")
-      HandlerResult.Done
+      HandlerResult.Found(Future { () })
     }
 
   def listen(port: Int, serverName: String = null, flags: Int = 0, backlog: Int = 4096): Unit =
@@ -83,10 +84,15 @@ object Server extends Router:
         free(buffer._1)
 
         if conn.parser.isDone then
-          try process(conn.parser, client)
-          catch case e: Exception => respond(new Response(_serverName).sendStatus(500), client)
-
-          shutdown(client)
+          try
+            process(conn.parser, client).foreach { res =>
+              respond(res, client)
+              shutdown(client)
+            }
+          catch
+            case e: Exception =>
+              respond(new Response(_serverName).sendStatus(500), client)
+              shutdown(client)
   end readCB
 
   val closeCB: CloseCB =
@@ -106,7 +112,7 @@ object Server extends Router:
       connectionMap(client) = new Connection
   end onConnectionCB
 
-  def process(httpreq: RequestParser, client: TCPHandle): Unit =
+  def process(httpreq: RequestParser, client: TCPHandle): Future[Response] =
     val res = new Response(_serverName)
     val req =
       new Request(
@@ -117,8 +123,10 @@ object Server extends Router:
         httpreq.body.toArray,
       )
 
-    apply(req, res)
-    respond(res, client)
+    apply(req, res) match
+      case HandlerResult.Found(f)   => f.map(_ => res)
+      case HandlerResult.Next       => sys.error("HandlerResult.Next")
+      case HandlerResult.Error(err) => sys.error(s"HandlerResult.Error($err)")
   end process
 
   val writeCB: WriteCB =

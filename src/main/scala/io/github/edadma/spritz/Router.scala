@@ -6,7 +6,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.matching.Regex
 
-class Router extends RequestHandler:
+class Router extends MiddlewareHandler:
 
   private[spritz] val routes = new ListBuffer[Route]
 
@@ -47,13 +47,13 @@ class Router extends RequestHandler:
 
   def patch(path: String, handler: EndpointHandler): Router = endpoint("PATCH", path, handler)
 
-  def use(path: String, middleware: RequestHandler): Router =
+  def use(path: String, middleware: MiddlewareHandler): Router =
     val (pathr, params) = regex(path)
 
     routes += Route.PathRoutes(pathr, params, middleware)
     this
 
-  def use(middleware: RequestHandler): Router =
+  def use(middleware: MiddlewareHandler): Router =
     routes += Route.Middleware(middleware)
     this
 
@@ -70,21 +70,20 @@ class Router extends RequestHandler:
             path.findPrefixMatchOf(req.rest) match
               case Some(m) if m.end == req.rest.length =>
                 routeMatch(req, params, m)
-                handler(req, res)
-                return HandlerResult.Done
+                return HandlerResult.Found(handler(req, res))
               case _ =>
         case Route.PathRoutes(path, params, handler) =>
           path.findPrefixMatchOf(req.rest) match
             case Some(m) =>
               routeMatch(req, params, m)
               handler(req, res) match
-                case HandlerResult.Done       => return HandlerResult.Done
+                case f: HandlerResult.Found   => return f
                 case HandlerResult.Next       =>
                 case HandlerResult.Error(err) => return HandlerResult.Error(err)
             case _ =>
         case Route.Middleware(handler) =>
           handler(req, res) match
-            case HandlerResult.Done       => return HandlerResult.Done
+            case f: HandlerResult.Found   => return f
             case HandlerResult.Next       =>
             case HandlerResult.Error(err) => return HandlerResult.Error(err)
     end for
