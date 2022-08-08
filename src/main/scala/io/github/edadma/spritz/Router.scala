@@ -35,13 +35,17 @@ class Router extends MiddlewareHandler:
     (buf.toString.r, groups.toSeq)
 
   protected def endpoint(method: Method, path: String, handler: EndpointHandler): Router =
+    endpointAsync(method, path, (req, res) => Future(handler(req, res)))
+
+  protected def endpointAsync(method: Method, path: String, handler: AsyncEndpointHandler): Router =
     val (pathr, params) = regex(path)
 
-    routes += Route.Endpoint(method, pathr, params, (req, res) => Future(handler(req, res)))
+    routes += Route.EndpointAsync(method, pathr, params, (req, res) => Future(handler(req, res)))
     this
 
-  def get(path: String, handler: EndpointHandler): Router =
-    endpoint("GET", path, handler)
+  def get(path: String, handler: EndpointHandler): Router = endpoint("GET", path, handler)
+
+  def getAsync(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("GET", path, handler)
 
   def post(path: String, handler: EndpointHandler): Router = endpoint("POST", path, handler)
 
@@ -69,7 +73,7 @@ class Router extends MiddlewareHandler:
   def apply(req: Request, res: Response): HandlerResult =
     for route <- routes do
       route match
-        case Route.Endpoint(method, path, params, handler) =>
+        case Route.EndpointAsync(method, path, params, handler) =>
           if method == req.method then
             path.findPrefixMatchOf(req.rest) match
               case Some(m) if m.end == req.rest.length =>

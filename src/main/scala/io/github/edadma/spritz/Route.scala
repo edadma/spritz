@@ -12,7 +12,7 @@ type MiddlewareHandler = (Request, Response) => HandlerResult
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
 
 enum Route:
-  case Endpoint(method: Method, path: Regex, params: Seq[String], handler: AsyncEndpointHandler) extends Route
+  case EndpointAsync(method: Method, path: Regex, params: Seq[String], handler: AsyncEndpointHandler) extends Route
   case PathRoutes(path: Regex, params: Seq[String], handler: MiddlewareHandler) extends Route
   case Middleware(handler: MiddlewareHandler) extends Route
 
