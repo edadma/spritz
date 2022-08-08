@@ -17,7 +17,7 @@ object Timer:
   var serial = 0L
   var timers: mutable.Map[Long, Promise[Unit]] = mutable.HashMap[Long, Promise[Unit]]()
 
-  def delay(dur: Duration): Future[Unit] =
+  def apply(dur: Duration): Future[Unit] =
     val promise = Promise[Unit]()
 
     serial += 1
