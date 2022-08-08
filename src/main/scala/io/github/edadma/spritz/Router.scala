@@ -43,17 +43,17 @@ class Router extends MiddlewareHandler:
     routes += Route.EndpointAsync(method, pathr, params, (req, res) => Future(handler(req, res)))
     this
 
-  def get(path: String, handler: EndpointHandler): Router = endpoint("GET", path, handler)
+  def get(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("GET", path, handler)
 
-  def getAsync(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("GET", path, handler)
+//  def getAsync(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("GET", path, handler)
 
-  def post(path: String, handler: EndpointHandler): Router = endpoint("POST", path, handler)
+  def post(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("POST", path, handler)
 
-  def put(path: String, handler: EndpointHandler): Router = endpoint("PUT", path, handler)
+  def put(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("PUT", path, handler)
 
-  def delete(path: String, handler: EndpointHandler): Router = endpoint("DELETE", path, handler)
+  def delete(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("DELETE", path, handler)
 
-  def patch(path: String, handler: EndpointHandler): Router = endpoint("PATCH", path, handler)
+  def patch(path: String, handler: AsyncEndpointHandler): Router = endpointAsync("PATCH", path, handler)
 
   def use(path: String, middleware: MiddlewareHandler): Router =
     val (pathr, params) = regex(path)

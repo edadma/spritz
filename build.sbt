@@ -54,7 +54,7 @@ libraryDependencies ++= Seq(
   "io.github.cquiroz" % "scala-java-time_native0.4_3" % "2.4.0",
 )
 
-//libraryDependencies += "com.github.rssh" %%% "shim-scala-async-dotty-cps-async" % "0.9.8"
+libraryDependencies += "com.github.rssh" %%% "dotty-cps-async" % "0.9.10"
 
 publishMavenStyle := true
 
