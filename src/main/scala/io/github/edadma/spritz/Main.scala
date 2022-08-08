@@ -32,13 +32,3 @@ import Server.eventLoop
     println(i)
     await { Timer(1 second) }
   }
-
-//  println("hello")
-//  println("setting up timer")
-//
-//  Timer.delay(2.seconds).map { _ =>
-//    println("timer done!")
-//  }
-//
-//  println("about to invoke loop.run()")
-//  println("done!")
