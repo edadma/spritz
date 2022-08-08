@@ -3,7 +3,10 @@ package io.github.edadma.spritz
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-import Server.async
+//import cps._
+//import cps.monads.FutureAsyncMonad
+
+import Server.eventLoop
 
 @main def run(): Unit =
   val birds =

@@ -15,7 +15,7 @@ object Server extends Router:
   import io.github.edadma.spritz.libuvConstants._
   import Util.checkError
 
-  implicit val async: EventLoop.type = EventLoop
+  implicit val eventLoop: EventLoop.type = EventLoop
 
   val SOCKADDR_IN = 16
   val loop: Loop = uv_default_loop()

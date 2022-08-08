@@ -7,7 +7,7 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent.Future
 import scala.util.matching.Regex
 
-import Server.async
+import Server.eventLoop
 
 class Router extends MiddlewareHandler:
 
