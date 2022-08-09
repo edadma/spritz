@@ -7,10 +7,15 @@
 //import Server.eventLoop
 //
 //@main def run(): Unit =
+//
+//  def get(req: Request, res: Response) = async {
+//    res.send(("get /birds", req.headers("accept")))
+//  }
+//
 //  val birds =
 //    Router()
-//      .get("/", (req, res) => async { res.send(("get /birds", req.headers("accept"))) })
-//      .get("/:id", (req, res) => async { res.send(("get /birds/:id", req)) })
+//      .get("/", get)
+//      .get("/:id", (req, res) => async { res.send(("get /birds/:id", req.params.id)) })
 //      .post("/:id", (req, res) => async { res.send(("post /birds/:id", req)) })
 //
 //  Server { app =>

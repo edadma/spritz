@@ -6,10 +6,10 @@ class Request(
     var method: Method,
     var path: String,
     val headers: mutable.Map[String, String],
-    val params: mutable.Map[String, String],
+    val params: DMap,
     val payload: Array[Byte],
 ):
-  var body: Map[String, Any] = null
+  var body: DMap = null
   var route: String = ""
   var rest: String = path
 

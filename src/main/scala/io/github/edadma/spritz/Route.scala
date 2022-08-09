@@ -3,7 +3,7 @@ package io.github.edadma.spritz
 import scala.concurrent.Future
 import scala.util.matching.Regex
 
-type AsyncEndpointHandler = (Request, Response) => Future[Unit]
+type AsyncEndpointHandler = (Request, Response) => Future[_]
 
 type EndpointHandler = (Request, Response) => Unit
 
@@ -17,6 +17,6 @@ enum Route:
   case Middleware(handler: MiddlewareHandler) extends Route
 
 enum HandlerResult:
-  case Found(future: Future[Unit]) extends HandlerResult
+  case Found(future: Future[_]) extends HandlerResult
   case Next extends HandlerResult
   case Error(err: Any) extends HandlerResult

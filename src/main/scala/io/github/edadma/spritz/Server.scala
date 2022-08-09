@@ -119,7 +119,7 @@ object Server extends Router:
         httpreq.requestLine.head.asInstanceOf[Method],
         httpreq.requestLine(1),
         httpreq.headers,
-        new mutable.HashMap,
+        new DMap,
         httpreq.body.toArray,
       )
 
