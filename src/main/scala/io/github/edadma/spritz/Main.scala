@@ -1,12 +1,12 @@
-package io.github.edadma.spritz
-
-import scala.concurrent.Future
-import scala.concurrent.duration.*
-import cps.*
-import cps.monads.FutureAsyncMonad
-import Server.eventLoop
-
-@main def run(): Unit =
+//package io.github.edadma.spritz
+//
+//import scala.concurrent.Future
+//import scala.concurrent.duration.*
+//import cps.*
+//import cps.monads.FutureAsyncMonad
+//import Server.eventLoop
+//
+//@main def run(): Unit =
 //  val birds =
 //    Router()
 //      .get("/", (req, res) => async { res.send(("get /birds", req.headers("accept"))) })
@@ -20,15 +20,15 @@ import Server.eventLoop
 //    println("listening")
 //  }
 
-  async {
-    println("hello")
-
-    for i <- 1 to 3 do await { f(i) }
-
-    println("done")
-  }
-
-  def f(i: Int) = async {
-    println(i)
-    await { Timer(1 second) }
-  }
+//  async {
+//    println("hello")
+//
+//    for i <- 1 to 3 do await { f(i) }
+//
+//    println("done")
+//  }
+//
+//  def f(i: Int) = async {
+//    println(i)
+//    await { Timer(1 second) }
+//  }
