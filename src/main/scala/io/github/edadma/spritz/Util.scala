@@ -1,6 +1,6 @@
 package io.github.edadma.spritz
 
-import libuv.{uv_err_name, uv_strerror}
+import LibUV.{uv_err_name, uv_strerror}
 
 import java.nio.ByteBuffer
 import scala.collection.mutable.ArrayBuffer

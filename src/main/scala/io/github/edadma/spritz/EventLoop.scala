@@ -11,8 +11,8 @@ import scala.util.{Try, Success}
 import scala.Option
 
 object EventLoop extends ExecutionContextExecutor {
-  import libuv._
-  import libuvConstants._
+  import LibUV._
+  import LibUVConstants._
   import Util.checkError
 
   val loop: Loop = uv_default_loop()

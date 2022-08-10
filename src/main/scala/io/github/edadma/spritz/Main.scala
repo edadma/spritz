@@ -1,12 +1,12 @@
-//package io.github.edadma.spritz
-//
-//import scala.concurrent.Future
-//import scala.concurrent.duration.*
+package io.github.edadma.spritz
+
+import scala.concurrent.Future
+import scala.concurrent.duration.*
 //import cps.*
 //import cps.monads.FutureAsyncMonad
 //import Server.eventLoop
-//
-//@main def run(): Unit =
+
+@main def run(): Unit =
 //
 //  def get(req: Request, res: Response) = async {
 //    res.send(("get /birds", req.headers("accept")))
@@ -37,3 +37,5 @@
 //    println(i)
 //    await { Timer(1 second) }
 //  }
+
+  ThreadPool.schedule(println(123))

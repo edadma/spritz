@@ -11,8 +11,8 @@ import scala.util.{Failure, Success, Try}
 import scala.concurrent.Future
 
 object Server extends Router:
-  import io.github.edadma.spritz.libuv._
-  import io.github.edadma.spritz.libuvConstants._
+  import io.github.edadma.spritz.LibUV._
+  import io.github.edadma.spritz.LibUVConstants._
   import Util.checkError
 
   implicit val eventLoop: EventLoop.type = EventLoop

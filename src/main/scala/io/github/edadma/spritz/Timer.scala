@@ -9,8 +9,8 @@ import scala.concurrent.Promise
 import scala.util.{Try, Success}
 import scala.Option
 import scala.concurrent.duration._
-import libuv._
-import libuvConstants._
+import LibUV._
+import LibUVConstants._
 
 object Timer:
 

@@ -4,7 +4,7 @@ import scala.scalanative.unsafe.{CFuncPtr1, CFuncPtr2, CFuncPtr3, CSSize, CSize,
 
 @link("uv")
 @extern
-object libuv {
+object LibUV {
   type PipeHandle = Ptr[Byte]
   type PollHandle = Ptr[Ptr[Byte]]
   type TCPHandle = Ptr[Byte]
@@ -14,6 +14,7 @@ object libuv {
   type Buffer = CStruct2[Ptr[Byte], CSize]
   type WriteReq = Ptr[Ptr[Byte]]
   type ShutdownReq = Ptr[Ptr[Byte]]
+  type WorkReq = Ptr[Ptr[Byte]]
   type Connection = Ptr[Byte]
   type ConnectionCB = CFuncPtr2[TCPHandle, Int, Unit]
   type AllocCB = CFuncPtr3[TCPHandle, CSize, Ptr[Buffer], Unit]
@@ -22,6 +23,8 @@ object libuv {
   type ShutdownCB = CFuncPtr2[ShutdownReq, Int, Unit]
   type CloseCB = CFuncPtr1[TCPHandle, Unit]
   type PollCB = CFuncPtr3[PollHandle, Int, Int, Unit]
+  type WorkCB = CFuncPtr1[WorkReq, Unit]
+  type AfterWorkCB = CFuncPtr2[WorkReq, Int, Unit]
 
   type PrepareHandle = Ptr[Byte]
   type TimerHandle = Ptr[Byte]
@@ -118,4 +121,6 @@ object libuv {
   def uv_fs_get_result(req: FSReq): Int = extern
 
   def uv_fs_get_ptr(req: FSReq): Ptr[Byte] = extern
+
+  def uv_queue_work(loop: Loop, req: WorkReq, work_cb: WorkCB, after_work_cb: AfterWorkCB): Int = extern
 }

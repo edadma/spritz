@@ -1,6 +1,6 @@
 package io.github.edadma.spritz
 
-object libuvConstants:
+object LibUVConstants:
   // uv_run_mode
   val UV_RUN_DEFAULT = 0
   val UV_RUN_ONCE = 1
@@ -20,6 +20,7 @@ object libuvConstants:
   val UV_WRITE_REQ_T = 3
   val UV_SHUTDOWN_REQ_T = 4
   val UV_FS_REQ_T = 6
+  val UV_WORK_REQ_T = 7
 
   val UV_READABLE = 1
   val UV_WRITABLE = 2
