@@ -31,6 +31,8 @@ object LibUV {
   type PrepareCB = CFuncPtr1[PrepareHandle, Unit]
   type TimerCB = CFuncPtr1[TimerHandle, Unit]
 
+  type RWLock = Ptr[Byte]
+
   def uv_prepare_init(loop: Loop, handle: PrepareHandle): Int = extern
 
   def uv_prepare_start(handle: PrepareHandle, cb: PrepareCB): Int = extern
@@ -123,4 +125,17 @@ object LibUV {
   def uv_fs_get_ptr(req: FSReq): Ptr[Byte] = extern
 
   def uv_queue_work(loop: Loop, req: WorkReq, work_cb: WorkCB, after_work_cb: AfterWorkCB): Int = extern
+
+  def uv_rwlock_init(rwlock: RWLock): Int = extern
+
+  def uv_rwlock_destroy(rwlock: RWLock): Unit = extern
+
+  def uv_rwlock_rdlock(rwlock: RWLock): Unit = extern
+
+  def uv_rwlock_rdunlock(rwlock: RWLock): Unit = extern
+
+  def uv_rwlock_wrlock(rwlock: RWLock): Unit = extern
+
+  def uv_rwlock_wrunlock(rwlock: RWLock): Unit = extern
+
 }

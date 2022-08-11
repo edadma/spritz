@@ -1,5 +1,8 @@
 package io.github.edadma.spritz
 
+import scala.scalanative.unsigned._
+import scala.scalanative.unsafe._
+
 object LibUVConstants:
   // uv_run_mode
   val UV_RUN_DEFAULT = 0
@@ -21,6 +24,8 @@ object LibUVConstants:
   val UV_SHUTDOWN_REQ_T = 4
   val UV_FS_REQ_T = 6
   val UV_WORK_REQ_T = 7
+
+  val RWLockSize: CSize = 56.toUInt
 
   val UV_READABLE = 1
   val UV_WRITABLE = 2

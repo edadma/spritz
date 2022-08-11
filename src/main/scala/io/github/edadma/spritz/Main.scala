@@ -2,9 +2,9 @@ package io.github.edadma.spritz
 
 import scala.concurrent.Future
 import scala.concurrent.duration.*
-//import cps.*
-//import cps.monads.FutureAsyncMonad
-//import Server.eventLoop
+import cps.*
+import cps.monads.FutureAsyncMonad
+import Server.eventLoop
 
 @main def run(): Unit =
 //
@@ -38,4 +38,27 @@ import scala.concurrent.duration.*
 //    await { Timer(1 second) }
 //  }
 
-  ThreadPool.schedule(println(123))
+  async {
+    ThreadPool.prt("start 1")
+
+    ThreadPool {
+      var a = 0
+
+      for i <- 1 to 5 do
+        ThreadPool.prt(s"background 1 $i")
+        for j <- 1 to 2000 do a += 1
+    }
+
+    ThreadPool.prt("start 2")
+
+    while ThreadPool.scheduled do {}
+    ThreadPool.prt("exiting")
+  }
+
+//  ThreadPool {
+//    var a = 0
+//
+//    for i <- 1 to 5 do
+//      ThreadPool.prt(s"background 2 $i")
+//      for j <- 1 to 20000000 do a += 1
+//  }

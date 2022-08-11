@@ -22,3 +22,20 @@ object HTTP:
     )
 
   def statusMessageString(code: Int): String = statusMessage getOrElse (code, code.toString)
+
+  val Continue = 100
+  val `Switching Protocols` = 101
+  val Processing = 102
+  val `Early Hints` = 103
+  val OK = 200
+  val Created = 201
+  val Accepted = 202
+  val `Non-Authoritative Information` = 203
+  val `No Content` = 204
+  val `Moved Permanently` = 301
+  val `Bad Request` = 400
+  val Unauthorized = 401
+  val Forbidden = 403
+  val `Not Found` = 404
+  val `I'm a teapot` = 418
+  val `Internal Server Error` = 500
