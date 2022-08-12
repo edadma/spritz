@@ -1,14 +1,20 @@
 package io.github.edadma.spritz
 
-import scala.scalanative.unsafe.{CFuncPtr1, CFuncPtr2, CFuncPtr3, CSSize, CSize, CString, CStruct2, Ptr, extern, link}
+import scala.scalanative.unsafe._
 
 @link("uv")
 @extern
 object LibUV {
+  type Handle = Ptr[Byte]
   type PipeHandle = Ptr[Byte]
   type PollHandle = Ptr[Ptr[Byte]]
   type TCPHandle = Ptr[Byte]
-
+  type ProcessHandle = Ptr[Byte]
+  type StdioContainer = CStruct2[CInt, Ptr[Byte]]
+  type ProcessOptions = CStruct10[ExitCB, CString, Ptr[CString], Ptr[CString], CString, CUnsignedInt, CInt, Ptr[
+    StdioContainer,
+  ], CUnsignedInt, CUnsignedInt]
+  type ExitCB = CFuncPtr3[ProcessHandle, CLong, CInt, Unit]
   type TTYHandle = Ptr[Byte]
   type Loop = Ptr[Byte]
   type Buffer = CStruct2[Ptr[Byte], CSize]
@@ -89,7 +95,7 @@ object LibUV {
 
   def uv_shutdown(shutdownReq: ShutdownReq, client: PipeHandle, shutdownCB: ShutdownCB): Int = extern
 
-  def uv_close(handle: PipeHandle, closeCB: CloseCB): Unit = extern
+  def uv_close(handle: Handle, closeCB: CloseCB): Unit = extern
 
   def uv_is_closing(handle: PipeHandle): Int = extern
 
@@ -124,18 +130,19 @@ object LibUV {
 
   def uv_fs_get_ptr(req: FSReq): Ptr[Byte] = extern
 
-  def uv_queue_work(loop: Loop, req: WorkReq, work_cb: WorkCB, after_work_cb: AfterWorkCB): Int = extern
+//  def uv_queue_work(loop: Loop, req: WorkReq, work_cb: WorkCB, after_work_cb: AfterWorkCB): Int = extern
+//
+//  def uv_rwlock_init(rwlock: RWLock): Int = extern
+//
+//  def uv_rwlock_destroy(rwlock: RWLock): Unit = extern
+//
+//  def uv_rwlock_rdlock(rwlock: RWLock): Unit = extern
+//
+//  def uv_rwlock_rdunlock(rwlock: RWLock): Unit = extern
+//
+//  def uv_rwlock_wrlock(rwlock: RWLock): Unit = extern
+//
+//  def uv_rwlock_wrunlock(rwlock: RWLock): Unit = extern
 
-  def uv_rwlock_init(rwlock: RWLock): Int = extern
-
-  def uv_rwlock_destroy(rwlock: RWLock): Unit = extern
-
-  def uv_rwlock_rdlock(rwlock: RWLock): Unit = extern
-
-  def uv_rwlock_rdunlock(rwlock: RWLock): Unit = extern
-
-  def uv_rwlock_wrlock(rwlock: RWLock): Unit = extern
-
-  def uv_rwlock_wrunlock(rwlock: RWLock): Unit = extern
-
+  def uv_spawn(loop: Loop, handle: ProcessHandle, options: Ptr[ProcessOptions]): CInt = extern
 }

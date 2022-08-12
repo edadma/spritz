@@ -6,59 +6,37 @@ import cps.*
 import cps.monads.FutureAsyncMonad
 import Server.eventLoop
 
-@main def run(): Unit =
-//
-//  def get(req: Request, res: Response) = async {
-//    res.send(("get /birds", req.headers("accept")))
-//  }
-//
-//  val birds =
-//    Router()
-//      .get("/", get)
-//      .get("/:id", (req, res) => async { res.send(("get /birds/:id", req.params.id)) })
-//      .post("/:id", (req, res) => async { res.send(("post /birds/:id", req)) })
-//
-//  Server { app =>
-//    app.use(middleware.JSON)
-//    app.use("/birds", birds)
-//    app.listen(8000, "ETA_SERVER/0.0.1")
-//    println("listening")
-//  }
+import scalanative.unsafe._
+import LibUV._
+import LibUVConstants._
 
-//  async {
-//    println("hello")
-//
-//    for i <- 1 to 3 do await { f(i) }
-//
-//    println("done")
-//  }
-//
-//  def f(i: Int) = async {
-//    println(i)
-//    await { Timer(1 second) }
-//  }
+@main def run(): Unit =
+
+  val handle = stackalloc[Byte](uv_handle_size(UV_PROCESS_T)).asInstanceOf[ProcessHandle]
+  val options = stackalloc[ProcessOptions]()
+  val args = stackalloc[CArray[CString, Nat._3]]()
+  val file = c"sleep"
+
+  val exitcb: ExitCB =
+    (handle: ProcessHandle, exit_status: CLong, term_signal: CInt) =>
+      println(s"exit status: $exit_status")
+      uv_close(handle, null)
+
+  args(0) = file
+  args(1) = c"2"
+  args(2) = null
+
+  options._1 = exitcb
+  options._2 = file
+  options._3 = args.asInstanceOf[Ptr[CString]]
+
+  println("start")
+  val r = uv_spawn(Server.loop, handle, options)
+
+  println(r)
 
   async {
-    ThreadPool.prt("start 1")
-
-    ThreadPool {
-      var a = 0
-
-      for i <- 1 to 5 do
-        ThreadPool.prt(s"background 1 $i")
-        for j <- 1 to 2000 do a += 1
-    }
-
-    ThreadPool.prt("start 2")
-
-    while ThreadPool.scheduled do {}
-    ThreadPool.prt("exiting")
+    for i <- 1 to 5 do
+      println(i)
+      await(Timer(500 millis))
   }
-
-//  ThreadPool {
-//    var a = 0
-//
-//    for i <- 1 to 5 do
-//      ThreadPool.prt(s"background 2 $i")
-//      for j <- 1 to 20000000 do a += 1
-//  }
